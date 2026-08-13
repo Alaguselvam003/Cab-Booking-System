@@ -1,0 +1,100 @@
+<div class="auth-container d-flex justify-content-center align-items-center py-5">
+  <div class="card auth-card shadow-sm p-4 col-12 col-sm-10 col-md-8 col-lg-6">
+    <div class="text-center mb-4">
+      <h2 class="text-primary font-weight-bold">Create Account</h2>
+      <p class="text-muted">Register to book a cab or drive with us</p>
+    </div>
+
+    @if (message) {
+      <div class="alert alert-info text-center py-2" role="alert">
+        {{ message }}
+      </div>
+    }
+
+    <form (ngSubmit)="register()">
+      
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-primary"><i class="bi bi-person"></i></span>
+          <input type="text" name="name" [(ngModel)]="registerData.name" class="form-control" placeholder="Enter username" required>
+        </div>
+      </div>
+      
+   
+      <div class="mb-3">
+        <label class="form-label" for="email">Email Address</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-primary"><i class="bi bi-envelope"></i></span>
+          <input type="email" name="email" [(ngModel)]="registerData.email" class="form-control" placeholder="Enter email" required>
+        </div>
+      </div>
+     
+      <div class="mb-3">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-primary"><i class="bi bi-lock"></i></span>
+          <input type="password" name="password" [(ngModel)]="registerData.password" class="form-control" placeholder="Enter password" required>
+        </div>
+      </div>
+      
+      <!-- Phone -->
+      <div class="mb-3">
+        <label class="form-label" for="phone">Phone Number</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-primary"><i class="bi bi-phone"></i></span>
+          <input type="number" name="phone" [(ngModel)]="registerData.phone" class="form-control" placeholder="Enter phone number" required>
+        </div>
+      </div>
+      
+      <!-- Role -->
+      <div class="mb-4">
+        <label class="form-label" for="role">Register As</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-primary"><i class="bi bi-briefcase"></i></span>
+          <select name="role" id="role" [(ngModel)]="registerData.role" class="form-select">
+            <option value="user">Passenger</option>
+            <option value="driver">Driver</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Driver Specific Fields -->
+      @if (registerData.role === 'driver') {
+        <div class="driver-info p-3 mb-4 rounded border bg-light">
+          <h5 class="mb-3 text-primary"><i class="bi bi-car-front-fill me-2"></i>Driver & Vehicle Info</h5>
+          
+          <div class="mb-3">
+            <label class="form-label" for="licensenumber">License Number</label>
+            <input type="number" name="licensenumber" [(ngModel)]="registerData.licensenumber" class="form-control" placeholder="Enter license number" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="vehicleType">Vehicle Type</label>
+            <select name="vehicleType" id="vehicleType" [(ngModel)]="registerData.vehicleType" class="form-select">
+              <option value="Sedan">Sedan</option>
+              <option value="SUV">SUV</option>
+              <option value="Hatchback">Hatchback</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="numberplate">Vehicle Plate Number</label>
+            <input type="text" name="numberplate" [(ngModel)]="registerData.numberplate" class="form-control" placeholder="e.g. TN01AB1234" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="capacity">Vehicle Capacity (Seats)</label>
+            <input type="number" name="capacity" [(ngModel)]="registerData.capacity" class="form-control" placeholder="e.g. 4" required>
+          </div>
+        </div>
+      }
+
+      <button type="submit" class="btn btn-primary w-100 py-2 mb-3 shadow-sm">Register Account</button>
+      
+      <div class="text-center text-muted">
+        <p class="mb-0">Already have an account? <a routerLink="/login" class="text-primary text-decoration-none fw-bold">Login here</a></p>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+.dashboard-container {
+  min-height: 90vh;
+  background-color: #f8f9fa;
+  color: #212529;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+  border-radius: 12px;
+  border: 1px solid #dee2e6 !important;
+}
+
+.driver-avatar {
+  border-color: #cfe2ff !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.form-switch-lg .form-check-input {
+  width: 3.5rem !important;
+  height: 1.8rem !important;
+  cursor: pointer;
+}
+
+.form-switch-lg .form-check-input:checked {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+}

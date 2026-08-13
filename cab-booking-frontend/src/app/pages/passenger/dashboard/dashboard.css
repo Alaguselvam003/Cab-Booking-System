@@ -1,0 +1,127 @@
+.dashboard-container {
+  min-height: 85vh;
+  background-color: #f4f6f9;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.avatar-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  font-size: 1.8rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.avatar-lg {
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.list-group-item {
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.list-group-item.active {
+  background-color: #f1f3f5 !important;
+  color: #0d6efd !important;
+  font-weight: 700;
+  border-left: 4px solid #0d6efd !important;
+}
+
+.list-group-item:hover:not(.active) {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+
+.stepper-wrapper {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.stepper-line {
+  z-index: 1;
+}
+
+.stepper-line-active {
+  z-index: 1.5;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-node .circle {
+  border-width: 2px !important;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+
+.details-modal-overlay {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+.stars-picker i {
+  transition: all 0.2s ease;
+}
+
+.stars-picker i:hover {
+  transform: scale(1.25);
+  filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4));
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+
+.custom-pickup-marker, .custom-drop-marker, .custom-driver-marker {
+  background: transparent !important;
+  border: none !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.custom-driver-marker i {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+  font-size: 1.8rem;
+}
+
+
+.notifications-wrapper::-webkit-scrollbar {
+  width: 5px;
+}
+
+.notifications-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.notifications-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.notifications-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+
+@media (max-width: 767.98px) {
+  .table-responsive table {
+    font-size: 0.85rem;
+  }
+}

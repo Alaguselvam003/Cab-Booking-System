@@ -1,0 +1,4 @@
+.bg-radial {
+  background: radial-gradient(circle at 10% 20%, rgb(4, 15, 33) 0%, rgb(10, 28, 59) 90.2%);
+  min-height: 100vh;
+}
