@@ -343,7 +343,7 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.activeRide = response;
-        localStorage.setItem('activeRideId', response.id.toString());
+        localStorage.setItem('activeRideId', response.Id.toString());
         this.bookingSuccess = 'Ride requested successfully!';
         this.addNotification('Ride requested successfully! Waiting for driver acceptance...');
         
@@ -356,7 +356,7 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
         
 
         this.setActiveTab('active');
-        this.startTrackingRide(response.id);
+        this.startTrackingRide(response.Id);
       },
       error: (err) => {
         console.error('Error requesting ride:', err);
@@ -388,7 +388,7 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
 
         this.passengerService.getRideHistory(this.currentUser.userId).subscribe({
           next: (rides) => {
-            const current = rides.find((r: any) => r.id === rideId);
+            const current = rides.find((r: any) => r.Id === rideId);
             if (current) {
               this.activeRide = current;
               
@@ -430,7 +430,7 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     const confirmCancel = confirm('Are you sure you want to cancel this ride?');
     if (!confirmCancel) return;
 
-    this.passengerService.cancelRide(this.activeRide.id).subscribe({
+    this.passengerService.cancelRide(this.activeRide.Id).subscribe({
       next: () => {
         this.message = 'Ride cancelled successfully.';
         this.addNotification('You cancelled your ride.');

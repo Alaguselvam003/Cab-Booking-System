@@ -177,7 +177,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   startRide() {
     if (!this.activeRide) return;
-    this.driverService.startRide(this.activeRide.id).subscribe({
+    this.driverService.startRide(this.activeRide.Id).subscribe({
       next: (startedRide) => {
         this.activeRide = startedRide;
         this.message = 'Ride started! Head to the drop-off location.';
@@ -189,7 +189,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   completeRide() {
     if (!this.activeRide) return;
     this.stopSimulation();
-    this.driverService.completeRide(this.activeRide.id).subscribe({
+    this.driverService.completeRide(this.activeRide.Id).subscribe({
       next: () => {
         this.message = 'Ride completed successfully!';
         this.activeRide = null;

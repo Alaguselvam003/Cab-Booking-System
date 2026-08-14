@@ -138,7 +138,7 @@
           <div class="card p-4 shadow-sm bg-white">
             <h5 class="text-primary fw-bold mb-4"><i class="bi bi-inbox-fill me-2"></i>Incoming Requests</h5>
 
-            @for (req of incomingRequests; track req.id) {
+            @for (req of incomingRequests; track req.Id) {
               <div class="p-3 bg-light rounded border mb-3 d-flex justify-content-between align-items-center">
                 <div>
                   <h6 class="text-dark mb-1">Passenger: {{ req.passenger.name }}</h6>
@@ -148,7 +148,7 @@
                   </div>
                   <div class="text-primary fw-bold">₹{{ req.fare }}</div>
                 </div>
-                <button (click)="acceptRequest(req.id)" class="btn btn-primary btn-sm px-4 py-2 shadow-sm">
+                <button (click)="acceptRequest(req.Id)" class="btn btn-primary btn-sm px-4 py-2 shadow-sm">
                   Accept Ride
                 </button>
               </div>
@@ -240,7 +240,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (history of rideHistory; track history.id) {
+                @for (history of rideHistory; track history.Id) {
                   <tr class="border-bottom">
                     <td>{{ history.requestedAt | date:'medium' }}</td>
                     <td><strong>{{ history.passenger.name }}</strong></td>

@@ -309,7 +309,7 @@
               <div class="col-lg-5">
                 <div class="card shadow-sm border-0 bg-white rounded-3 p-4 h-100">
                   <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-                    <h5 class="fw-bold text-dark mb-0">Ride #{{ activeRide.id }}</h5>
+                    <h5 class="fw-bold text-dark mb-0">Ride #{{ activeRide.Id }}</h5>
                     <span class="badge bg-primary text-white fs-6 py-2 px-3">{{ activeRide.status }}</span>
                   </div>
 
@@ -456,9 +456,9 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (history of rideHistory; track history.id) {
+                  @for (history of rideHistory; track history.Id) {
                     <tr class="border-bottom border-light">
-                      <td class="fw-semibold">#{{ history.id }}</td>
+                      <td class="fw-semibold">#{{ history.Id }}</td>
                       <td class="small text-muted">{{ history.requestedAt | date:'medium' }}</td>
                       <td>
                         @if (history.driver) {
@@ -492,7 +492,7 @@
                             }
                           </div>
                         } @else if (history.status === 'COMPLETED') {
-                          <button (click)="ratedRideId = history.id; showRatingForm = true; setActiveTab('active')" class="btn btn-outline-warning btn-sm py-0.5 px-2 small">Rate Driver</button>
+                          <button (click)="ratedRideId = history.Id; showRatingForm = true; setActiveTab('active')" class="btn btn-outline-warning btn-sm py-0.5 px-2 small">Rate Driver</button>
                         } @else {
                           <span class="text-muted">--</span>
                         }
