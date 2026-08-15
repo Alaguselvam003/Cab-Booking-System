@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginData = {
     email: '',
     password: ''
@@ -17,6 +17,24 @@ export class LoginComponent {
   message = '';
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit() {
+    const userJson = localStorage.getItem('currentUser');
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        if (user && user.role) {
+          if (user.role === 'driver') {
+            this.router.navigate(['/driver/dashboard']);
+          } else {
+            this.router.navigate(['/passenger/dashboard']);
+          }
+        }
+      } catch (e) {
+        console.error('Error restoring session:', e);
+      }
+    }
+  }
 
   login() {
     this.authService.login(this.loginData).subscribe({

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DriverService } from '../../../core/services/driver.service';
+import { LocationService } from '../../../core/services/location.service';
 
 @Component({
   selector: 'app-driver-dashboard',
@@ -24,7 +25,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   isSimulating = false;
 
-  constructor(private driverService: DriverService, private router: Router) {}
+  constructor(
+    private driverService: DriverService, 
+    private router: Router,
+    private locationService: LocationService
+  ) {}
 
   ngOnInit() {
     const userJson = localStorage.getItem('currentUser');
@@ -288,5 +293,9 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.stopRequestsPolling();
     this.stopActiveRidePolling();
     this.stopSimulationTimer();
+  }
+
+  getLandmarkName(lat: number, lng: number): string {
+    return this.locationService.getLandmarkName(lat, lng);
   }
 }

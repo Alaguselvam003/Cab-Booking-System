@@ -27,10 +27,40 @@ export class LocationService {
     { keys: ['airport', 'chennai airport', 'meenambakkam'], lat: 12.9941, lng: 80.1709, name: 'Chennai International Airport' },
     { keys: ['marina', 'marina beach'], lat: 13.0475, lng: 80.2824, name: 'Marina Beach, Chennai' },
     { keys: ['mylapore', 'kapaleeshwarar'], lat: 13.0330, lng: 80.2690, name: 'Mylapore, Chennai' },
-    { keys: ['velachery', 'phoenix marketcity'], lat: 12.9796, lng: 80.2196, name: 'Velachery, Chennai' }
+    { keys: ['velachery', 'phoenix marketcity'], lat: 12.9796, lng: 80.2196, name: 'Velachery, Chennai' },
+    { keys: ['egmore', 'egmore railway station'], lat: 13.0783, lng: 80.2599, name: 'Egmore, Chennai' },
+    { keys: ['koyambedu', 'cmbt', 'koyambedu bus stand'], lat: 13.0678, lng: 80.2052, name: 'Koyambedu (CMBT), Chennai' },
+    { keys: ['tambaram', 'tambaram railway'], lat: 12.9238, lng: 80.1215, name: 'Tambaram, Chennai' },
+    { keys: ['nungambakkam', 'loyola college'], lat: 13.0626, lng: 80.2371, name: 'Nungambakkam, Chennai' },
+    { keys: ['besant nagar', 'elliots beach', 'elliot beach'], lat: 13.0003, lng: 80.2721, name: 'Besant Nagar, Chennai' },
+    { keys: ['thiruvanmiyur', 'tidel park'], lat: 12.9863, lng: 80.2676, name: 'Thiruvanmiyur, Chennai' },
+    { keys: ['sholinganallur', 'elcot'], lat: 12.9010, lng: 80.2270, name: 'Sholinganallur, Chennai' },
+    { keys: ['chromepet', 'mit chennai'], lat: 12.9520, lng: 80.1410, name: 'Chromepet, Chennai' },
+    { keys: ['vadapalani', 'vadapalani temple'], lat: 13.0487, lng: 80.2084, name: 'Vadapalani, Chennai' },
+    { keys: ['anna nagar', 'anna nagar tower'], lat: 13.0850, lng: 80.2101, name: 'Anna Nagar, Chennai' },
+    { keys: ['saidapet', 'saidapet court'], lat: 13.0200, lng: 80.2200, name: 'Saidapet, Chennai' },
+    { keys: ['porur', 'porur junction'], lat: 13.0382, lng: 80.1565, name: 'Porur, Chennai' },
+    { keys: ['perungudi', 'perungudi lake'], lat: 12.9654, lng: 80.2461, name: 'Perungudi, Chennai' },
+    { keys: ['karapakkam', 'tcs karapakkam'], lat: 12.9202, lng: 80.2289, name: 'Karapakkam, Chennai' },
+    { keys: ['pallavaram', 'pallavaram railway'], lat: 12.9675, lng: 80.1491, name: 'Pallavaram, Chennai' },
+    { keys: ['medavakkam', 'medavakkam junction'], lat: 12.9179, lng: 80.1923, name: 'Medavakkam, Chennai' }
   ];
 
   constructor(private http: HttpClient) {}
+
+  getLandmarkName(lat: number, lng: number): string {
+    const tolerance = 0.005;
+    const match = this.fallbackLocations.find(loc => 
+      Math.abs(loc.lat - lat) < tolerance && Math.abs(loc.lng - lng) < tolerance
+    );
+    if (match) return match.name;
+
+    if (lat >= 1 && lat <= 8 && lng >= 1 && lng <= 8) {
+      return `Grid Coordinate (${lat}, ${lng})`;
+    }
+
+    return `Coordinates (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+  }
 
   geocode(query: string): Observable<LocationCoords> {
     if (!query || !query.trim()) {

@@ -36,13 +36,13 @@
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
-/* Map specific fixes for Leaflet */
+
 #homeMap {
   background-color: #e5e9f0;
   outline: none;
 }
 
-/* Make Leaflet zoom controls look clean and modern */
+
 .leaflet-bar {
   border: none !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;

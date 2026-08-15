@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.example.Cab.Booking.System.repository.RideLocationRepository;
 import com.example.Cab.Booking.System.entity.RideLocation;
+import com.example.Cab.Booking.System.entity.Driver;
+import com.example.Cab.Booking.System.repository.DriverRepository;
 
 @Service
 public class PassengerService{
@@ -28,6 +30,9 @@ public class PassengerService{
 
     @Autowired
     private RideLocationRepository rideLocationRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
     public Ride requestRide(Ride ride){
         ride.setStatus(RideStatus.REQUESTED);
@@ -75,6 +80,11 @@ public class PassengerService{
     public void cancelRide(Long rideId){
         Ride ride = rideRepository.findById(rideId).orElseThrow(() -> new RuntimeException("Ride not found"));
         ride.setStatus(RideStatus.CANCELLED);
+        if (ride.getDriver() != null) {
+            Driver driver = ride.getDriver();
+            driver.setIsAvailable(true);
+            driverRepository.save(driver);
+        }
         rideRepository.save(ride);
     }
 

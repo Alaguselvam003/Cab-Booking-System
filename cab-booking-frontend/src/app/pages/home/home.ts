@@ -46,6 +46,24 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    const userJson = localStorage.getItem('currentUser');
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        if (user && user.role) {
+          if (user.role === 'driver') {
+            this.router.navigate(['/driver/dashboard']);
+            return;
+          } else {
+            this.router.navigate(['/passenger/dashboard']);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Error restoring session:', e);
+      }
+    }
+    
     const today = new Date();
     this.todayStr = today.toISOString().split('T')[0];
   }

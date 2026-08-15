@@ -764,28 +764,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
 
 
   getLandmarkName(lat: number, lng: number): string {
-    const locations = [
-      { lat: 13.0827, lng: 80.2707, name: 'Chennai Central Railway Station' },
-      { lat: 13.0418, lng: 80.2341, name: 'T. Nagar, Chennai' },
-      { lat: 13.0012, lng: 80.2565, name: 'Adyar, Chennai' },
-      { lat: 13.0067, lng: 80.2206, name: 'Guindy, Chennai' },
-      { lat: 12.9941, lng: 80.1709, name: 'Chennai International Airport' },
-      { lat: 13.0475, lng: 80.2824, name: 'Marina Beach, Chennai' },
-      { lat: 13.0330, lng: 80.2690, name: 'Mylapore, Chennai' },
-      { lat: 12.9796, lng: 80.2196, name: 'Velachery, Chennai' }
-    ];
-
-    const tolerance = 0.005;
-    const match = locations.find(loc => 
-      Math.abs(loc.lat - lat) < tolerance && Math.abs(loc.lng - lng) < tolerance
-    );
-    if (match) return match.name;
-    
-
-    if (lat >= 1 && lat <= 8 && lng >= 1 && lng <= 8) {
-      return `Grid Coordinate (${lat}, ${lng})`;
-    }
-
-    return `Coordinates (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    return this.locationService.getLandmarkName(lat, lng);
   }
 }
