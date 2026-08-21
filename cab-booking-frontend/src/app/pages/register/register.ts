@@ -44,6 +44,24 @@ export class RegisterComponent implements OnInit {
   }
   
   register() {
+    if (!this.registerData.email || !this.registerData.email.toLowerCase().endsWith('@gmail.com')) {
+      this.message = 'Registration failed! Email must end with @gmail.com';
+      return;
+    }
+
+    const phoneStr = String(this.registerData.phone);
+    if (!/^\d{10}$/.test(phoneStr)) {
+      this.message = 'Registration failed! Phone number must contain exactly 10 digits.';
+      return;
+    }
+
+    const password = this.registerData.password;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_+\-\[\]\\\/]/.test(password);
+    if (!password || password.length < 6 || !hasSpecialChar) {
+      this.message = 'Registration failed! Password must be at least 6 characters and contain at least one special character.';
+      return;
+    }
+
     this.authService.register(this.registerData).subscribe({
       next: (response) => {
         console.log('Registration successful', response);

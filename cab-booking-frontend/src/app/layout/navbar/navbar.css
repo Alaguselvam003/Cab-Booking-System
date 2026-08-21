@@ -20,5 +20,5 @@
 .fixed-top + .home-container, 
 .fixed-top + .auth-container, 
 .fixed-top + .dashboard-container {
-  padding-top: 76px; /* Offset to prevent overlap by navbar */
+  padding-top: 76px;
 }

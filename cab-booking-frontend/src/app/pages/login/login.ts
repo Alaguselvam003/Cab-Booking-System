@@ -16,6 +16,14 @@ export class LoginComponent implements OnInit {
   };
   message = '';
 
+  isForgotPasswordMode = false;
+  forgotPasswordData = {
+    email: '',
+    phone: '',
+    newPassword: '',
+    confirmPassword: ''
+  };
+
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit() {
@@ -54,6 +62,62 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         console.log('Login failed', error);
         this.message = 'Login failed! Invalid credentials.';
+      }
+    });
+  }
+
+  toggleForgotPassword(mode: boolean) {
+    this.isForgotPasswordMode = mode;
+    this.message = '';
+    this.forgotPasswordData = {
+      email: '',
+      phone: '',
+      newPassword: '',
+      confirmPassword: ''
+    };
+  }
+
+  resetPassword() {
+    if (!this.forgotPasswordData.email || !this.forgotPasswordData.email.toLowerCase().endsWith('@gmail.com')) {
+      this.message = 'Reset failed! Email must end with @gmail.com';
+      return;
+    }
+
+    const phoneStr = String(this.forgotPasswordData.phone);
+    if (!/^\d{10}$/.test(phoneStr)) {
+      this.message = 'Reset failed! Phone number must contain exactly 10 digits.';
+      return;
+    }
+
+    const newPassword = this.forgotPasswordData.newPassword;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_+\-\[\]\\\/]/.test(newPassword);
+    if (!newPassword || newPassword.length < 6 || !hasSpecialChar) {
+      this.message = 'Reset failed! New password must be at least 6 characters and contain at least one special character.';
+      return;
+    }
+
+    if (newPassword !== this.forgotPasswordData.confirmPassword) {
+      this.message = 'Reset failed! Passwords do not match.';
+      return;
+    }
+
+    const payload = {
+      email: this.forgotPasswordData.email,
+      phone: Number(this.forgotPasswordData.phone),
+      newPassword: newPassword
+    };
+
+    this.authService.forgotPassword(payload).subscribe({
+      next: (response) => {
+        console.log('Password reset successful', response);
+        this.message = 'Password reset successful! You can login now.';
+        setTimeout(() => {
+          this.toggleForgotPassword(false);
+        }, 2000);
+      },
+      error: (error) => {
+        console.log('Password reset failed', error);
+        this.message = 'Reset failed! ' + (error.error || error.message || 'Verification details incorrect.');
       }
     });
   }

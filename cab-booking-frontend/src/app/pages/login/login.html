@@ -1,40 +1,100 @@
-<div class="auth-container d-flex justify-content-center align-items-center">
-  <div class="card auth-card shadow-sm p-4 col-12 col-sm-10 col-md-8 col-lg-6">
-    <div class="text-center mb-4">
-      <h2 class="text-primary font-weight-bold">Welcome Back</h2>
-      <p class="text-muted">Login to request a ride or manage trips</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div class="auth-container d-flex justify-content-center align-items-center" style="background: radial-gradient(circle, #f8fafc 0%, #e2e8f0 100%);">
+    <div class="card auth-card shadow-sm p-4 col-12 col-sm-10 col-md-8 col-lg-6" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important; animation: slideUp 0.5s ease-out;">
+      
+      @if (message) {
+        <div class="alert alert-info text-center py-2 mb-3" role="alert" style="border-radius: 8px; border: none; font-weight: 500;">
+          {{ message }}
+        </div>
+      }
+
+      @if (!isForgotPasswordMode) {
+        <div class="text-center mb-4">
+          <h2 class="text-primary font-weight-bold" style="letter-spacing: -0.5px;">Welcome Back</h2>
+          <p class="text-muted">Login to request a ride or manage trips</p>
+        </div>
+
+        <form (ngSubmit)="login()">
+          <div class="mb-3">
+            <label class="form-label" for="email">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-primary"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" [(ngModel)]="loginData.email" class="form-control" placeholder="Enter email" required style="border-left: none;">
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex justify-content-between">
+              <label class="form-label" for="password">Password</label>
+              <a (click)="toggleForgotPassword(true)" style="cursor: pointer; font-size: 14px; font-weight: 600;" class="text-primary text-decoration-none">Forgot Password?</a>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-primary"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" [(ngModel)]="loginData.password" class="form-control" placeholder="Enter password" required style="border-left: none;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 mb-3 shadow-sm" style="border-radius: 8px; font-size: 16px; letter-spacing: 0.5px;">Login</button>
+          
+          <div class="text-center text-muted">
+            <p class="mb-0">Don't have an account? <a routerLink="/register" class="text-primary text-decoration-none fw-bold" style="transition: color 0.2s;">Register here</a></p>
+          </div>
+        </form>
+      } @else {
+        <div class="text-center mb-4">
+          <h2 class="text-primary font-weight-bold" style="letter-spacing: -0.5px;">Reset Password</h2>
+          <p class="text-muted">Verify your details to set a new password</p>
+        </div>
+
+        <form (ngSubmit)="resetPassword()">
+          <div class="mb-3">
+            <label class="form-label" for="resetEmail">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-primary"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="resetEmail" [(ngModel)]="forgotPasswordData.email" class="form-control" placeholder="Enter registered email" required style="border-left: none;">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="resetPhone">Phone Number</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-primary"><i class="bi bi-phone"></i></span>
+              <input type="text" name="resetPhone" [(ngModel)]="forgotPasswordData.phone" class="form-control" placeholder="Enter 10-digit phone number" minlength="10" maxlength="10" required style="border-left: none;">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="newPassword">New Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-primary"><i class="bi bi-lock"></i></span>
+              <input type="password" name="newPassword" [(ngModel)]="forgotPasswordData.newPassword" class="form-control" placeholder="Min 6 chars & 1 special char" required style="border-left: none;">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label" for="confirmPassword">Confirm New Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-primary"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="confirmPassword" [(ngModel)]="forgotPasswordData.confirmPassword" class="form-control" placeholder="Confirm new password" required style="border-left: none;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 mb-3 shadow-sm" style="border-radius: 8px; font-size: 16px; letter-spacing: 0.5px;">Update Password</button>
+          
+          <div class="text-center text-muted">
+            <p class="mb-0">Back to <a (click)="toggleForgotPassword(false)" style="cursor: pointer; font-weight: 600;" class="text-primary text-decoration-none">Login</a></p>
+          </div>
+        </form>
+      }
+
     </div>
-
-    @if (message) {
-      <div class="alert alert-info text-center py-2" role="alert">
-        {{ message }}
-      </div>
-    }
-
-    <form (ngSubmit)="login()">
-      
-      <div class="mb-3">
-        <label class="form-label" for="email">Email Address</label>
-        <div class="input-group">
-          <span class="input-group-text bg-light text-primary"><i class="bi bi-envelope"></i></span>
-          <input type="email" name="email" [(ngModel)]="loginData.email" class="form-control" placeholder="Enter email" required>
-        </div>
-      </div>
-      
-     
-      <div class="mb-4">
-        <label class="form-label" for="password">Password</label>
-        <div class="input-group">
-          <span class="input-group-text bg-light text-primary"><i class="bi bi-lock"></i></span>
-          <input type="password" name="password" [(ngModel)]="loginData.password" class="form-control" placeholder="Enter password" required>
-        </div>
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100 py-2 mb-3 shadow-sm">Login</button>
-      
-      <div class="text-center text-muted">
-        <p class="mb-0">Don't have an account? <a routerLink="/register" class="text-primary text-decoration-none fw-bold">Register here</a></p>
-      </div>
-    </form>
   </div>
-</div>
+</body>
+</html>

@@ -59,6 +59,17 @@ public class AuthService{
       return savedUser;
    }
 
+   @Transactional
+   public void resetPassword(String email, Long phone, String newPassword) {
+       User user = userRepository.findByEmail(email)
+           .orElseThrow(() -> new RuntimeException("User not found with this email"));
+       if (user.getPhone() == null || !user.getPhone().equals(phone)) {
+           throw new RuntimeException("Phone number does not match registered phone number");
+       }
+       user.setPassword(newPassword);
+       userRepository.save(user);
+   }
+
    public User login(String email, String password){
 
     Optional<User> user = userRepository.findByEmail(email);

@@ -1,142 +1,145 @@
-<div class="home-container py-5">
-  <div class="container px-4">
-    
-    <div class="text-center mb-5">
-      <h1 class="fw-bold text-dark mb-2">Book Your <span class="text-primary">SwiftCab</span></h1>
-      <p class="text-secondary lead">Get instant, reliable road-distance fare estimates and book in seconds.</p>
-    </div>
-
-    <div class="row g-4 justify-content-center">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div class="home-container py-5">
+    <div class="container px-4">
       
-     
-      <div class="col-lg-5 col-md-6 col-12">
-        <div class="card shadow-sm border border-light-subtle rounded-4 p-4 bg-white h-100">
-          <h4 class="fw-bold text-dark mb-4"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Cab Booking Estimator</h4>
-          
-          @if (errorMessage) {
-            <div class="alert alert-danger py-2 text-center small rounded-3" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}
-            </div>
-          }
-          
-          @if (successMessage) {
-            <div class="alert alert-success py-2 text-center small rounded-3" role="alert">
-              <i class="bi bi-check-circle-fill me-1"></i>{{ successMessage }}
-            </div>
-          }
+      <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark mb-2">Book Your <span class="text-primary">SwiftCab</span></h1>
+        <p class="text-secondary lead">Get instant, reliable road-distance fare estimates and book in seconds.</p>
+      </div>
 
-          <form (ngSubmit)="calculateDistanceAndFare()">
+      <div class="row g-4 justify-content-center">
+        
+        <div class="col-lg-5 col-md-6 col-12">
+          <div class="card shadow-sm border border-light-subtle rounded-4 p-4 bg-white h-100">
+            <h4 class="fw-bold text-dark mb-4"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Cab Booking Estimator</h4>
             
-           
-            <div class="mb-3">
-              <label for="pickupInput" class="form-label fw-semibold text-secondary small">From (Pickup Location)</label>
-              <div class="input-group">
-                <span class="input-group-text bg-light text-primary border-end-0"><i class="bi bi-geo-alt"></i></span>
-                <input 
-                  type="text" 
-                  id="pickupInput" 
-                  name="pickup" 
-                  [(ngModel)]="pickup" 
-                  (ngModelChange)="onInputChange()"
-                  class="form-control bg-light border-start-0 ps-0" 
-                  placeholder="e.g. Chennai Central or Mylapore" 
-                  required>
+            @if (errorMessage) {
+              <div class="alert alert-danger py-2 text-center small rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}
               </div>
-            </div>
-
-          
-            <div class="mb-3">
-              <label for="dropInput" class="form-label fw-semibold text-secondary small">To (Drop Location)</label>
-              <div class="input-group">
-                <span class="input-group-text bg-light text-danger border-end-0"><i class="bi bi-flag"></i></span>
-                <input 
-                  type="text" 
-                  id="dropInput" 
-                  name="drop" 
-                  [(ngModel)]="drop" 
-                  (ngModelChange)="onInputChange()"
-                  class="form-control bg-light border-start-0 ps-0" 
-                  placeholder="e.g. T Nagar or Adyar" 
-                  required>
-              </div>
-            </div>
-
-           
-            <div class="mb-4">
-              <label for="dateInput" class="form-label fw-semibold text-secondary small">Date of Travel</label>
-              <div class="input-group">
-                <span class="input-group-text bg-light text-primary border-end-0"><i class="bi bi-calendar-event"></i></span>
-                <input 
-                  type="date" 
-                  id="dateInput" 
-                  name="travelDate" 
-                  [(ngModel)]="travelDate" 
-                  (ngModelChange)="onInputChange()"
-                  class="form-control bg-light border-start-0 ps-0" 
-                  [min]="todayStr"
-                  required>
-              </div>
-            </div>
-
-           
-            <div class="p-3 bg-light rounded-3 border border-light-subtle mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small">Route Distance:</span>
-                <strong class="text-dark">{{ distance !== null ? (distance | number:'1.2-2') + ' km' : '0 km' }}</strong>
-              </div>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small">Estimated Fare:</span>
-                <span class="fs-5 fw-bold text-primary">{{ formattedFare }}</span>
-              </div>
-            </div>
-
-           
-            <div class="d-grid gap-2">
-              <button 
-                type="submit" 
-                class="btn btn-outline-primary py-2 fw-semibold shadow-sm"
-                [disabled]="loading">
-                @if (loading) {
-                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Calculating...
-                } @else {
-                  <i class="bi bi-calculator me-1"></i>Calculate Fare
-                }
-              </button>
-              
-              <button 
-                type="button" 
-                (click)="continueBooking()" 
-                [disabled]="!isBookingValid() || loading" 
-                class="btn btn-primary py-2 fw-semibold shadow-sm">
-                <i class="bi bi-arrow-right-circle me-1"></i>Continue Booking
-              </button>
-            </div>
-
-          </form>
-        </div>
-      </div>
-
-      
-      <div class="col-lg-7 col-md-6 col-12">
-        <div class="card shadow-sm border border-light-subtle rounded-4 p-3 bg-white h-100 d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-compass-fill text-primary me-2"></i>Live Route Map</h5>
-            @if (loading) {
-              <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-3">Syncing route...</span>
-            } @else if (distance !== null) {
-              <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-3">Route mapped</span>
-            } @else {
-              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-3">Awaiting inputs</span>
             }
-          </div>
-          
-          <div class="flex-grow-1 position-relative rounded-3 overflow-hidden border shadow-inner" style="min-height: 380px;">
-            <div id="homeMap" class="w-100 h-100" style="z-index: 1;"></div>
+            
+            @if (successMessage) {
+              <div class="alert alert-success py-2 text-center small rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill me-1"></i>{{ successMessage }}
+              </div>
+            }
+
+            <form (ngSubmit)="calculateDistanceAndFare()">
+              
+              <div class="mb-3">
+                <label for="pickupInput" class="form-label fw-semibold text-secondary small">From (Pickup Location)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-primary border-end-0"><i class="bi bi-geo-alt"></i></span>
+                  <input 
+                    type="text" 
+                    id="pickupInput" 
+                    name="pickup" 
+                    [(ngModel)]="pickup" 
+                    (ngModelChange)="onInputChange()"
+                    class="form-control bg-light border-start-0 ps-0" 
+                    placeholder="e.g. Chennai Central or Mylapore" 
+                    required>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="dropInput" class="form-label fw-semibold text-secondary small">To (Drop Location)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-danger border-end-0"><i class="bi bi-flag"></i></span>
+                  <input 
+                    type="text" 
+                    id="dropInput" 
+                    name="drop" 
+                    [(ngModel)]="drop" 
+                    (ngModelChange)="onInputChange()"
+                    class="form-control bg-light border-start-0 ps-0" 
+                    placeholder="e.g. T Nagar or Adyar" 
+                    required>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="dateInput" class="form-label fw-semibold text-secondary small">Date of Travel</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-primary border-end-0"><i class="bi bi-calendar-event"></i></span>
+                  <input 
+                    type="date" 
+                    id="dateInput" 
+                    name="travelDate" 
+                    [(ngModel)]="travelDate" 
+                    (ngModelChange)="onInputChange()"
+                    class="form-control bg-light border-start-0 ps-0" 
+                    [min]="todayStr"
+                    required>
+                </div>
+              </div>
+
+              <div class="p-3 bg-light rounded-3 border border-light-subtle mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="text-muted small">Route Distance:</span>
+                  <strong class="text-dark">{{ distance !== null ? (distance | number:'1.2-2' ) + ' km' : '0 km' }}</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-muted small">Estimated Fare:</span>
+                  <span class="fs-5 fw-bold text-primary">{{ formattedFare }}</span>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button 
+                  type="submit" 
+                  class="btn btn-outline-primary py-2 fw-semibold shadow-sm"
+                  [disabled]="loading">
+                  @if (loading) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Calculating...
+                  } @else {
+                    <i class="bi bi-calculator me-1"></i>Calculate Fare
+                  }
+                </button>
+                
+                <button 
+                  type="button" 
+                  (click)="continueBooking()" 
+                  [disabled]="!isBookingValid() || loading" 
+                  class="btn btn-primary py-2 fw-semibold shadow-sm">
+                  <i class="bi bi-arrow-right-circle me-1"></i>Continue Booking
+                </button>
+              </div>
+
+            </form>
           </div>
         </div>
+
+        <div class="col-lg-7 col-md-6 col-12">
+          <div class="card shadow-sm border border-light-subtle rounded-4 p-3 bg-white h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold text-dark mb-0"><i class="bi bi-compass-fill text-primary me-2"></i>Live Route Map</h5>
+              @if (loading) {
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-3">Syncing route...</span>
+              } @else if (distance !== null) {
+                <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-3">Route mapped</span>
+              } @else {
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-3">Awaiting inputs</span>
+              }
+            </div>
+            
+            <div class="flex-grow-1 position-relative rounded-3 overflow-hidden border shadow-inner" style="min-height: 380px;">
+              <div id="homeMap" class="w-100 h-100" style="z-index: 1;"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
-
   </div>
-</div>
+</body>
+</html>

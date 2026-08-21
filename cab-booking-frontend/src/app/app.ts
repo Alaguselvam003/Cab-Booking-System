@@ -10,5 +10,5 @@ import { Footer } from './layout/footer/footer';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('cab-booking-frontend');
+  protected readonly title = signal('Cab Booking System');
 }

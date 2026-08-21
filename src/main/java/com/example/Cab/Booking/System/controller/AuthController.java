@@ -13,6 +13,7 @@ import com.example.Cab.Booking.System.entity.User;
 import com.example.Cab.Booking.System.service.AuthService;
 
 import com.example.Cab.Booking.System.dto.RegisterRequest;
+import com.example.Cab.Booking.System.dto.ForgotPasswordRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,6 +33,16 @@ public class AuthController{
         User loggedUser = authService.login(user.getEmail(), user.getPassword());
         return  ResponseEntity.ok(loggedUser);
     }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+      try {
+          authService.resetPassword(request.getEmail(), request.getPhone(), request.getNewPassword());
+          return ResponseEntity.ok("Password reset successfully");
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+      }
+  }
 
 }
 
