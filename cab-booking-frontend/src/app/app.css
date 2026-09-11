@@ -1,4 +1,9 @@
-.bg-radial {
-  background: radial-gradient(circle at 10% 20%, rgb(4, 15, 33) 0%, rgb(10, 28, 59) 90.2%);
+.swift-app-wrapper {
+  background-color: var(--bg-main);
   min-height: 100vh;
+}
+
+.swift-main-content {
+  margin-top: 72px;
+  background-color: var(--bg-main);
 }

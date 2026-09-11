@@ -6,6 +6,328 @@
   <title>Document</title>
 </head>
 <body>
-  <p>dashboard works!</p>
+  <div class="admin-dashboard-wrapper py-4 px-lg-4">
+    <div class="container-fluid">
+      
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-navy text-yellow px-2.5 py-1 rounded-pill small">Admin Console</span>
+            <h3 class="fw-extrabold text-navy mb-0">Dispatch &amp; Operations Control</h3>
+          </div>
+          <p class="text-secondary small mb-0 mt-1">Real-time system overview of active fleet, driver statuses, passenger rides, and metrics.</p>
+        </div>
+        <div>
+          <button (click)="loadAdminData()" [disabled]="loading" class="btn btn-swift-yellow btn-sm fw-bold">
+            @if (loading) {
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span> Refreshing...
+            } @else {
+              <i class="bi bi-arrow-clockwise me-1"></i> Refresh Live Data
+            }
+          </button>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div class="card swift-card p-3 text-center h-100">
+            <div class="kpi-icon-bubble bg-navy text-yellow mx-auto mb-2">
+              <i class="bi bi-car-front-fill"></i>
+            </div>
+            <h4 class="fw-extrabold text-navy mb-0">{{ stats.totalFleet }}</h4>
+            <span class="text-secondary small fw-medium">Total Fleet</span>
+          </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div class="card swift-card p-3 text-center h-100">
+            <div class="kpi-icon-bubble bg-success-subtle text-success mx-auto mb-2">
+              <i class="bi bi-broadcast"></i>
+            </div>
+            <h4 class="fw-extrabold text-navy mb-0">{{ stats.activeDrivers }}</h4>
+            <span class="text-secondary small fw-medium">Active Drivers</span>
+          </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div class="card swift-card p-3 text-center h-100">
+            <div class="kpi-icon-bubble bg-yellow-light text-navy mx-auto mb-2">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <h4 class="fw-extrabold text-navy mb-0">{{ stats.totalPassengers }}</h4>
+            <span class="text-secondary small fw-medium">Passengers</span>
+          </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div class="card swift-card p-3 text-center h-100">
+            <div class="kpi-icon-bubble bg-primary-subtle text-primary mx-auto mb-2">
+              <i class="bi bi-journal-text"></i>
+            </div>
+            <h4 class="fw-extrabold text-navy mb-0">{{ stats.totalRides }}</h4>
+            <span class="text-secondary small fw-medium">Total Bookings</span>
+          </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div class="card swift-card p-3 text-center h-100">
+            <div class="kpi-icon-bubble bg-success-subtle text-success mx-auto mb-2">
+              <i class="bi bi-check2-circle"></i>
+            </div>
+            <h4 class="fw-extrabold text-navy mb-0">{{ stats.completedRides }}</h4>
+            <span class="text-secondary small fw-medium">Completed</span>
+          </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div class="card swift-card p-3 text-center h-100">
+            <div class="kpi-icon-bubble bg-warning-subtle text-warning mx-auto mb-2">
+              <i class="bi bi-currency-rupee"></i>
+            </div>
+            <h4 class="fw-extrabold text-navy mb-0">₹{{ stats.totalRevenue | number:'1.2-2' }}</h4>
+            <span class="text-secondary small fw-medium">Gross Revenue</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card swift-card p-4">
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 pb-3 border-bottom">
+          <div class="btn-group" role="group">
+            <button 
+              (click)="setActiveTab('rides')" 
+              [class.active]="activeTab === 'rides'" 
+              class="btn btn-outline-secondary px-3 py-2 fw-semibold d-flex align-items-center gap-2">
+              <i class="bi bi-geo-alt-fill text-yellow"></i>
+              <span>Passenger Bookings &amp; Rides</span>
+              <span class="badge bg-navy text-yellow rounded-pill ms-1">{{ rides.length }}</span>
+            </button>
+            <button 
+              (click)="setActiveTab('drivers')" 
+              [class.active]="activeTab === 'drivers'" 
+              class="btn btn-outline-secondary px-3 py-2 fw-semibold d-flex align-items-center gap-2">
+              <i class="bi bi-car-front-fill text-yellow"></i>
+              <span>Driver &amp; Vehicle Fleet</span>
+              <span class="badge bg-navy text-yellow rounded-pill ms-1">{{ drivers.length }}</span>
+            </button>
+            <button 
+              (click)="setActiveTab('passengers')" 
+              [class.active]="activeTab === 'passengers'" 
+              class="btn btn-outline-secondary px-3 py-2 fw-semibold d-flex align-items-center gap-2">
+              <i class="bi bi-person-fill text-yellow"></i>
+              <span>Registered Passengers</span>
+              <span class="badge bg-navy text-yellow rounded-pill ms-1">{{ passengers.length }}</span>
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm" style="width: 240px;">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                class="form-control" 
+                placeholder="Search name, phone, id...">
+            </div>
+
+            @if (activeTab === 'rides') {
+              <select [(ngModel)]="statusFilter" class="form-select form-select-sm" style="width: 150px;">
+                <option value="ALL">All Statuses</option>
+                <option value="REQUESTED">REQUESTED</option>
+                <option value="ACCEPTED">ACCEPTED</option>
+                <option value="ONGOING">ONGOING</option>
+                <option value="COMPLETED">COMPLETED</option>
+                <option value="CANCELLED">CANCELLED</option>
+              </select>
+            }
+          </div>
+        </div>
+
+        @if (activeTab === 'rides') {
+          <div class="table-responsive animate-fade-in-up">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="text-navy small fw-bold">
+                  <th>Ride ID</th>
+                  <th>Passenger</th>
+                  <th>Route Details (Pickup &rarr; Drop)</th>
+                  <th>Assigned Driver &amp; Vehicle</th>
+                  <th>Fare</th>
+                  <th>Status</th>
+                  <th>Date &amp; Time</th>
+                  <th>Rating &amp; Feedback</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of filteredRides; track r.id || r.Id) {
+                  <tr>
+                    <td class="fw-bold text-navy">#{{ r.id || r.Id }}</td>
+                    <td>
+                      <div class="fw-semibold text-navy">{{ r.passenger?.name || 'Guest' }}</div>
+                      <div class="small text-secondary"><i class="bi bi-telephone me-1"></i>{{ r.passenger?.phone || '--' }}</div>
+                    </td>
+                    <td class="small">
+                      <div><span class="badge bg-success bg-opacity-10 text-success me-1">Pickup</span> {{ getLandmarkName(r.pickupLat, r.pickupLng) }}</div>
+                      <div class="mt-1"><span class="badge bg-danger bg-opacity-10 text-danger me-1">Drop</span> {{ getLandmarkName(r.dropLat, r.dropLng) }}</div>
+                    </td>
+                    <td>
+                      @if (r.driver) {
+                        <div class="fw-semibold text-navy">{{ r.driver.user?.name || 'Driver' }}</div>
+                        <div class="small text-secondary">
+                          <span class="badge bg-navy text-yellow me-1">{{ r.driver.vehicle?.numberplate || 'Plate' }}</span>
+                          <span>{{ r.driver.vehicle?.type }}</span>
+                        </div>
+                      } @else {
+                        <span class="text-muted small"><i class="bi bi-dash-circle me-1"></i>Unassigned</span>
+                      }
+                    </td>
+                    <td class="fw-bold text-navy">₹{{ r.fare | number:'1.2-2' }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'badge-status-requested': r.status === 'REQUESTED',
+                        'badge-status-accepted': r.status === 'ACCEPTED',
+                        'badge-status-ongoing': r.status === 'ONGOING' || r.status === 'IN_RIDE',
+                        'badge-status-completed': r.status === 'COMPLETED',
+                        'badge-status-cancelled': r.status === 'CANCELLED'
+                      }">
+                        {{ r.status }}
+                      </span>
+                    </td>
+                    <td class="small text-secondary">
+                      <div>{{ r.requestedAt | date:'mediumDate' }}</div>
+                      <div style="font-size: 0.78rem;">{{ r.requestedAt | date:'shortTime' }}</div>
+                    </td>
+                    <td>
+                      @if (r.rating) {
+                        <div class="text-yellow small d-flex gap-1 mb-1">
+                          @for (s of [1,2,3,4,5]; track s) {
+                            <i class="bi" [ngClass]="r.rating >= s ? 'bi-star-fill' : 'bi-star text-muted'"></i>
+                          }
+                        </div>
+                        <div class="text-secondary" style="font-size: 0.78rem;">{{ r.feedback || '' }}</div>
+                      } @else {
+                        <span class="text-muted small">--</span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                      <i class="bi bi-inbox fs-2 mb-2 d-block opacity-50"></i>
+                      No passenger ride records found matching the filter.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (activeTab === 'drivers') {
+          <div class="table-responsive animate-fade-in-up">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="text-navy small fw-bold">
+                  <th>Driver ID</th>
+                  <th>Driver Details</th>
+                  <th>Vehicle Details</th>
+                  <th>License Number</th>
+                  <th>Duty Status</th>
+                  <th>Current Location</th>
+                  <th>Active Assignment</th>
+                  <th>Completed Trips</th>
+                  <th>Total Earned</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of filteredDrivers; track d.driverId) {
+                  <tr>
+                    <td class="fw-bold text-navy">#{{ d.driverId }}</td>
+                    <td>
+                      <div class="fw-semibold text-navy">{{ d.user?.name || 'Driver' }}</div>
+                      <div class="small text-secondary">{{ d.user?.email }}</div>
+                      <div class="small text-secondary"><i class="bi bi-telephone me-1"></i>{{ d.user?.phone }}</div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-navy">{{ d.vehicle?.type || 'Sedan' }} ({{ d.vehicle?.capacity || 4 }} seats)</div>
+                      <span class="badge bg-navy text-yellow">{{ d.vehicle?.numberplate || 'TN01AB1234' }}</span>
+                    </td>
+                    <td class="fw-semibold text-navy">{{ d.licensenumber || 'N/A' }}</td>
+                    <td>
+                      @if (getDriverActiveRide(d.driverId)) {
+                        <span class="badge badge-status-ongoing">ON_TRIP</span>
+                      } @else if (d.isAvailable) {
+                        <span class="badge bg-success text-white">ONLINE</span>
+                      } @else {
+                        <span class="badge bg-secondary text-white">OFFLINE</span>
+                      }
+                    </td>
+                    <td class="small fw-semibold text-navy">
+                      {{ getLandmarkName(d.currentLatitude || 1.0, d.currentLongitude || 1.0) }}
+                    </td>
+                    <td>
+                      @if (getDriverActiveRide(d.driverId); as activeRide) {
+                        <span class="badge badge-status-accepted">Ride #{{ activeRide.id || activeRide.Id }}</span>
+                        <div class="small text-secondary mt-1">{{ activeRide.passenger?.name }}</div>
+                      } @else {
+                        <span class="text-muted small">None</span>
+                      }
+                    </td>
+                    <td class="fw-bold text-navy text-center">{{ getDriverCompletedRidesCount(d.driverId) }}</td>
+                    <td class="fw-extrabold text-navy">₹{{ getDriverTotalEarnings(d.driverId) | number:'1.2-2' }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                      <i class="bi bi-car-front fs-2 mb-2 d-block opacity-50"></i>
+                      No drivers registered in the fleet yet.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (activeTab === 'passengers') {
+          <div class="table-responsive animate-fade-in-up">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="text-navy small fw-bold">
+                  <th>Passenger ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone Number</th>
+                  <th>Role</th>
+                  <th>Total Rides Booked</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of filteredPassengers; track p.userId || p.id) {
+                  <tr>
+                    <td class="fw-bold text-navy">#{{ p.userId || p.id }}</td>
+                    <td class="fw-semibold text-navy">{{ p.name }}</td>
+                    <td class="small text-secondary">{{ p.email }}</td>
+                    <td class="small text-secondary">{{ p.phone }}</td>
+                    <td><span class="badge bg-yellow-light text-navy fw-semibold">{{ p.role || 'user' }}</span></td>
+                    <td class="fw-bold text-navy">{{ getPassengerRidesCount(p.userId || p.id) }} rides</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                      <i class="bi bi-people fs-2 mb-2 d-block opacity-50"></i>
+                      No registered passengers found.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+      </div>
+
+    </div>
+  </div>
 </body>
 </html>

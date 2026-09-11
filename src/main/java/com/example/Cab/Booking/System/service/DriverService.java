@@ -58,13 +58,14 @@ public class DriverService {
 
         List<Ride> activeRides = rideRepository.findByDriver(driver);
         for (Ride ride : activeRides) {
-            if (ride.getStatus() == RideStatus.ACCEPTED || ride.getStatus() == RideStatus.IN_RIDE) {
+            if (ride.getStatus() == RideStatus.ACCEPTED || ride.getStatus() == RideStatus.ONGOING || ride.getStatus() == RideStatus.IN_RIDE) {
                 RideLocation location = new RideLocation(null, ride, latitude, longitude, LocalDateTime.now());
                 rideLocationRepository.save(location);
             }
         }
         return savedDriver;
     }
+
     public List<Ride> getIncomingRides() {
         return rideRepository.findAll().stream()
                 .filter(ride -> ride.getStatus() == RideStatus.REQUESTED && ride.getDriver() == null)
@@ -76,7 +77,7 @@ public class DriverService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
         if (ride.getStatus() != RideStatus.REQUESTED) {
-            throw new RuntimeException("Ride already accepted or cancelled");
+            throw new RuntimeException("Ride cannot be accepted. Current status: " + ride.getStatus());
         }
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
@@ -89,32 +90,42 @@ public class DriverService {
     }
 
     @Transactional
-    public Ride startRide(Long rideId) {
+    public Ride pickupRide(Long rideId) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
         if (ride.getStatus() != RideStatus.ACCEPTED) {
-            throw new RuntimeException("Ride must be accepted before starting");
+            throw new RuntimeException("Pickup is only allowed when status is ACCEPTED. Current status: " + ride.getStatus());
         }
-        ride.setStatus(RideStatus.IN_RIDE);
+        ride.setStatus(RideStatus.ONGOING);
         return rideRepository.save(ride);
     }
 
     @Transactional
-    public Ride completeRide(Long rideId) {
+    public Ride startRide(Long rideId) {
+        return pickupRide(rideId);
+    }
+
+    @Transactional
+    public Ride dropRide(Long rideId) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
-        if (ride.getStatus() != RideStatus.IN_RIDE) {
-            throw new RuntimeException("Ride must be in-ride to complete");
+        if (ride.getStatus() != RideStatus.ONGOING && ride.getStatus() != RideStatus.IN_RIDE) {
+            throw new RuntimeException("Drop is only allowed when status is ONGOING. Current status: " + ride.getStatus());
         }
         ride.setStatus(RideStatus.COMPLETED);
         ride.setCompletedAt(LocalDateTime.now());
-        
+
         Driver driver = ride.getDriver();
         if (driver != null) {
             driver.setIsAvailable(true);
             driverRepository.save(driver);
         }
         return rideRepository.save(ride);
+    }
+
+    @Transactional
+    public Ride completeRide(Long rideId) {
+        return dropRide(rideId);
     }
 
     public List<Ride> getRideHistory(Long driverId) {
@@ -127,7 +138,7 @@ public class DriverService {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         return rideRepository.findByDriver(driver).stream()
-                .filter(ride -> ride.getStatus() == RideStatus.ACCEPTED || ride.getStatus() == RideStatus.IN_RIDE)
+                .filter(ride -> ride.getStatus() == RideStatus.ACCEPTED || ride.getStatus() == RideStatus.ONGOING || ride.getStatus() == RideStatus.IN_RIDE)
                 .findFirst();
     }
 }

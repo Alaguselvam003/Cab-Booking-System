@@ -22,12 +22,11 @@ public class FareController {
 
     @PostMapping("/estimate")
     public ResponseEntity<FareEstimateResponse> getFareEstimate(@RequestBody FareEstimateRequest request) {
-        System.out.println("=== BACKEND FARE ESTIMATE REQUEST RECEIVED ===");
+        System.out.println(" BACKEND FARE ESTIMATE REQUEST RECEIVED");
         System.out.println("  distanceKm: " + request.getDistanceKm());
         System.out.println("  durationMinutes: " + request.getDurationMinutes());
         FareEstimateResponse estimate = fareService.calculateFare(request);
         System.out.println("  Calculated Fare: " + estimate.getFare());
-        System.out.println("================================================");
         return ResponseEntity.ok(estimate);
     }
 }

@@ -1,12 +1,17 @@
-.footer {
-  background-color: #ffffff !important;
-  border-top: 1px solid #dee2e6 !important;
+.swift-footer {
+  background-color: var(--navy);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+  transition: all 0.3s ease;
 }
 
-.hover-text-primary {
+.footer-link {
+  color: #94A3B8;
+  text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.hover-text-primary:hover {
-  color: #0d6efd !important;
+.footer-link:hover {
+  color: var(--primary-yellow);
+  text-decoration: underline;
 }

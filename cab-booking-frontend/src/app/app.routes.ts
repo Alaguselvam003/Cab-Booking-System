@@ -5,6 +5,7 @@ import {LoginComponent} from './pages/login/login';
 import {RegisterComponent} from './pages/register/register';
 import {PassengerDashboardComponent} from './pages/passenger/dashboard/dashboard';
 import {DriverDashboardComponent} from './pages/driver/dashboard/dashboard';
+import {AdminDashboardComponent} from './pages/admin/dashboard/dashboard';
 
 export const routes: Routes = [
     {path:'', component: HomeComponent},
@@ -12,5 +13,6 @@ export const routes: Routes = [
     {path:'register', component:RegisterComponent},
     {path:'passenger/dashboard', component: PassengerDashboardComponent},
     {path:'driver/dashboard', component: DriverDashboardComponent},
+    {path:'admin/dashboard', component: AdminDashboardComponent},
     {path:'**',redirectTo:''}
 ];

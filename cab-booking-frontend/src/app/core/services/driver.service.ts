@@ -30,12 +30,20 @@ export class DriverService {
     return this.http.post(`${this.apiUrl}/${driverId}/accept/${rideId}`, {});
   }
 
+  pickupRide(rideId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/ride/${rideId}/pickup`, {});
+  }
+
   startRide(rideId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/ride/${rideId}/start`, {});
+    return this.http.post(`${this.apiUrl}/ride/${rideId}/pickup`, {});
+  }
+
+  dropRide(rideId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/ride/${rideId}/drop`, {});
   }
 
   completeRide(rideId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/ride/${rideId}/complete`, {});
+    return this.http.post(`${this.apiUrl}/ride/${rideId}/drop`, {});
   }
 
   getRideHistory(driverId: number): Observable<any> {

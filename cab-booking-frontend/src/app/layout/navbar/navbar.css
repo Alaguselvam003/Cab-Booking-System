@@ -1,24 +1,119 @@
-.navbar {
-  background-color: #ffffff !important;
-  z-index: 1000;
-  border-bottom: 1px solid #dee2e6;
+.swift-navbar {
+  background-color: var(--navy) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+  box-shadow: 0 4px 20px rgba(10, 15, 29, 0.3);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  z-index: 1030;
+  transition: all 0.3s ease;
 }
 
-.nav-link {
-  transition: color 0.2s ease;
+.brand-icon-wrapper {
+  width: 36px;
+  height: 36px;
+  background-color: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
 }
 
-.nav-link.active {
-  color: #0d6efd !important;
-  font-weight: 600;
+.brand-text {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
 }
 
-.nav-link:hover {
-  color: #0b5ed7 !important;
+.swift-toggler {
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
 }
 
-.fixed-top + .home-container, 
-.fixed-top + .auth-container, 
-.fixed-top + .dashboard-container {
-  padding-top: 76px;
+.swift-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(251, 191, 36, 0.25);
+  outline: none;
+}
+
+.swift-nav-link {
+  color: #94A3B8 !important;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.swift-nav-link:hover {
+  color: var(--primary-yellow) !important;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.swift-nav-link.active {
+  color: var(--primary-yellow) !important;
+  font-weight: 700;
+  background-color: rgba(251, 191, 36, 0.1);
+}
+
+.btn-swift-login {
+  color: #F8FAFC !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: transparent !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1.15rem !important;
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-swift-login:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--primary-yellow) !important;
+  border-color: var(--primary-yellow) !important;
+  transform: translateY(-1px);
+}
+
+.user-pill {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.user-avatar-sm {
+  width: 28px;
+  height: 28px;
+  background-color: var(--primary-yellow);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-swift-logout {
+  background-color: rgba(220, 38, 38, 0.12) !important;
+  border: 1px solid rgba(220, 38, 38, 0.4) !important;
+  color: #FCA5A5 !important;
+  font-weight: 600 !important;
+  padding: 0.45rem 0.95rem !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-swift-logout:hover {
+  background-color: #DC2626 !important;
+  color: #FFFFFF !important;
+  border-color: #DC2626 !important;
+}
+
+@media (max-width: 991.98px) {
+  .swift-navbar .navbar-collapse {
+    background-color: #0B1120;
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-top: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }

@@ -1,64 +1,87 @@
-.home-container {
-  background-color: #f8fafc;
-  min-height: 100vh;
-  font-family: 'Outfit', sans-serif;
+.home-page {
+  background-color: var(--bg-main);
+  min-height: calc(100vh - 140px);
 }
 
-.card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.hero-section {
+  padding: 1.5rem 0 1rem;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(148, 163, 184, 0.15) !important;
+.hero-badge {
+  background-color: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: var(--navy);
 }
 
-.form-control:focus, .form-select:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+.text-highlight {
+  color: var(--navy);
+  position: relative;
+  display: inline-block;
 }
 
-.input-group-text {
-  color: #64748b;
-  border-color: #dee2e6;
+.text-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-color: rgba(251, 191, 36, 0.4);
+  z-index: -1;
+  border-radius: 4px;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-  border: none;
+.prop-chip {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+.icon-bubble {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
 }
 
-.shadow-inner {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+.map-icon-bubble {
+  width: 32px;
+  height: 32px;
+  background-color: rgba(15, 23, 42, 0.06);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.fare-result-card {
+  background-color: #F8FAFC;
+  border: 1.5px solid var(--border-color);
+}
+
+.map-wrapper {
+  min-height: 420px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  background-color: #E2E8F0;
+}
 
 #homeMap {
-  background-color: #e5e9f0;
-  outline: none;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  z-index: 1;
 }
 
-
-.leaflet-bar {
-  border: none !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-}
-
-.leaflet-bar a {
-  background-color: #fff !important;
-  color: #1e293b !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  transition: background-color 0.2s;
-}
-
-.leaflet-bar a:hover {
-  background-color: #f8fafc !important;
-}
-
-.leaflet-container {
-  font-family: 'Outfit', sans-serif !important;
+@media (max-width: 991.98px) {
+  .map-wrapper, #homeMap {
+    min-height: 340px;
+  }
 }

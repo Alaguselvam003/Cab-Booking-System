@@ -10,6 +10,7 @@ declare var L: any;
 
 @Component({
   selector: 'app-home',
+  standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -51,7 +52,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       try {
         const user = JSON.parse(userJson);
         if (user && user.role) {
-          if (user.role === 'driver') {
+          if (user.role === 'admin' || user.email === 'admin@gmail.com') {
+            this.router.navigate(['/admin/dashboard']);
+            return;
+          } else if (user.role === 'driver') {
             this.router.navigate(['/driver/dashboard']);
             return;
           } else {
@@ -120,7 +124,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-
     forkJoin({
       origin: this.locationService.geocode(this.pickup),
       destination: this.locationService.geocode(this.drop)
@@ -130,7 +133,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dropCoords = { lat: coords.destination.lat, lng: coords.destination.lng };
         this.cdr.detectChanges();
 
-
         return this.locationService.getRoute(
           this.pickupCoords.lat, this.pickupCoords.lng,
           this.dropCoords.lat, this.dropCoords.lng
@@ -139,7 +141,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       switchMap((route) => {
         this.distance = route.distanceKm;
         this.cdr.detectChanges();
-
 
         return this.fareService.calculateFare(route.distanceKm).pipe(
           map((fareRes) => ({
@@ -163,7 +164,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         console.error('Fare calculation flow error:', err);
-        
 
         if (err.message && err.message.includes('Location not found')) {
           this.errorMessage = 'One or both of the locations could not be resolved. Please try Chennai landmarks.';
@@ -193,7 +193,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-
     const minLat = 12.98;
     const maxLat = 13.10;
     const minLng = 80.15;
@@ -211,7 +210,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const pickupCell = mapCoordsToGrid(this.pickupCoords.lat, this.pickupCoords.lng);
     const dropCell = mapCoordsToGrid(this.dropCoords.lat, this.dropCoords.lng);
 
-
     localStorage.setItem('pendingBooking', JSON.stringify({
       pickup: pickupCell,
       drop: dropCell,
@@ -223,7 +221,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       distanceKm: this.distance,
       calculatedFare: this.fare
     }));
-
 
     const currentUserJson = localStorage.getItem('currentUser');
     if (currentUserJson) {
@@ -239,11 +236,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateMap(coordinates: [number, number][]) {
     if (!this.map || !this.pickupCoords || !this.dropCoords) return;
 
-
     if (this.pickupMarker) this.map.removeLayer(this.pickupMarker);
     if (this.dropMarker) this.map.removeLayer(this.dropMarker);
     if (this.routePolyline) this.map.removeLayer(this.routePolyline);
-
 
     this.pickupMarker = L.marker([this.pickupCoords.lat, this.pickupCoords.lng], {
       icon: L.divIcon({
@@ -263,14 +258,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     }).addTo(this.map).bindPopup('Drop Location');
 
-
     this.routePolyline = L.polyline(coordinates, {
-      color: '#0d6efd',
+      color: '#2563EB',
       weight: 5,
-      opacity: 0.8,
+      opacity: 0.85,
       lineJoin: 'round'
     }).addTo(this.map);
-
 
     this.map.fitBounds(this.routePolyline.getBounds(), {
       padding: [40, 40]

@@ -46,20 +46,120 @@ export class LocationService {
     { keys: ['medavakkam', 'medavakkam junction'], lat: 12.9179, lng: 80.1923, name: 'Medavakkam, Chennai' }
   ];
 
+  private gridLocationMap: { [key: string]: string } = {
+    '1,1': 'Chennai Central Railway Station',
+    '1,2': 'George Town Commercial Hub',
+    '1,3': 'Parrys Corner',
+    '1,4': 'Royapuram Terminal',
+    '1,5': 'Tondiarpet Market',
+    '1,6': 'Tiruvottiyur High Road',
+    '1,7': 'Ennore Express Hub',
+    '1,8': 'Manali Industrial Zone',
+
+    '2,1': 'Egmore Railway Station',
+    '2,2': 'Kilpauk Medical District',
+    '2,3': 'Purusawalkam High Road',
+    '2,4': 'Vepery Junction',
+    '2,5': 'Perambur Loco Works',
+    '2,6': 'Kolathur Junction',
+    '2,7': 'Madhavaram CMBT Terminal',
+    '2,8': 'Redhills Lake Point',
+
+    '3,1': 'Anna Nagar Tower Park',
+    '3,2': 'Shenoy Nagar Metro',
+    '3,3': 'Nungambakkam High Road',
+    '3,4': 'Thousand Lights (Anna Salai)',
+    '3,5': 'Chetpet Eco Park',
+    '3,6': 'Aminjikarai Market',
+    '3,7': 'Villivakkam Station',
+    '3,8': 'Ambattur Industrial Estate',
+
+    '4,1': 'Marina Beach Promenade',
+    '4,2': 'Triplicane High Road',
+    '4,3': 'T. Nagar (Pondy Bazaar)',
+    '4,4': 'Alwarpet Junction',
+    '4,5': 'Teynampet (DMS Metro)',
+    '4,6': 'Kodambakkam Flyover',
+    '4,7': 'Vadapalani Temple Point',
+    '4,8': 'Koyambedu CMBT Terminal',
+
+    '5,1': 'Mylapore Kapaleeshwarar Temple',
+    '5,2': 'Mandaveli Terminus',
+    '5,3': 'Saidapet Court Junction',
+    '5,4': 'Nandanam YMCA',
+    '5,5': 'Ashok Nagar 11th Avenue',
+    '5,6': 'K.K. Nagar Central',
+    '5,7': 'Virugambakkam Market',
+    '5,8': 'Porur Junction Hub',
+
+    '6,1': 'Besant Nagar (Elliot Beach)',
+    '6,2': 'Adyar Signal & Bridge',
+    '6,3': 'Guindy Industrial Estate',
+    '6,4': 'Velachery Main Road (Phoenix Marketcity)',
+    '6,5': 'Madipakkam Koot Road',
+    '6,6': 'Adambakkam Junction',
+    '6,7': 'Ramapuram DLF Cybercity',
+    '6,8': 'Iyyappanthangal Bus Depot',
+
+    '7,1': 'Thiruvanmiyur (TIDEL Park / ECR)',
+    '7,2': 'Kottivakkam Beach Road',
+    '7,3': 'Chennai International Airport (Meenambakkam)',
+    '7,4': 'Pallavaram GST Road',
+    '7,5': 'Perungudi OMR Toll Gate',
+    '7,6': 'Nanganallur Anjaneyar Temple',
+    '7,7': 'Moovarasanpet',
+    '7,8': 'Pammal Main Road',
+
+    '8,1': 'Palavakkam ECR Hub',
+    '8,2': 'Neelankarai Beach Route',
+    '8,3': 'Sholinganallur ELCOT SEZ (OMR)',
+    '8,4': 'Karapakkam TCS Center',
+    '8,5': 'Tambaram Railway Station',
+    '8,6': 'Chromepet MIT Flyover',
+    '8,7': 'Medavakkam Junction',
+    '8,8': 'Semmancheri IT Expressway'
+  };
+
   constructor(private http: HttpClient) {}
 
   getLandmarkName(lat: number, lng: number): string {
+    if (!lat || !lng) return 'Chennai Central Railway Station';
+
+   
+    if (lat >= 1 && lat <= 8 && lng >= 1 && lng <= 8) {
+      const row = Math.round(lat);
+      const col = Math.round(lng);
+      const key = `${row},${col}`;
+      if (this.gridLocationMap[key]) {
+        return this.gridLocationMap[key];
+      }
+    }
+
+   
     const tolerance = 0.005;
     const match = this.fallbackLocations.find(loc => 
       Math.abs(loc.lat - lat) < tolerance && Math.abs(loc.lng - lng) < tolerance
     );
     if (match) return match.name;
 
-    if (lat >= 1 && lat <= 8 && lng >= 1 && lng <= 8) {
-      return `Grid Coordinate (${lat}, ${lng})`;
+    let closestLoc = this.fallbackLocations[0];
+    let minDist = Number.MAX_VALUE;
+
+    for (const loc of this.fallbackLocations) {
+      const dist = this.calculateHaversine(lat, lng, loc.lat, loc.lng);
+      if (dist < minDist) {
+        minDist = dist;
+        closestLoc = loc;
+      }
     }
 
-    return `Coordinates (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    if (minDist <= 3.0) {
+      return closestLoc.name;
+    } else if (minDist <= 10.0) {
+      return `${closestLoc.name} Area`;
+    }
+
+    return closestLoc ? closestLoc.name : 'Chennai City Center';
   }
 
   geocode(query: string): Observable<LocationCoords> {

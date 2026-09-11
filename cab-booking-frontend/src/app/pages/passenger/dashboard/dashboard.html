@@ -6,133 +6,205 @@
   <title>Document</title>
 </head>
 <body>
-  <div class="dashboard-container container-fluid py-4">
+  <div class="passenger-dashboard-wrapper container-fluid py-4 px-lg-4">
     <div class="row g-4">
       
-      <div class="col-md-3">
-        <div class="card shadow-sm border-0 bg-white rounded-3 overflow-hidden">
-          <div class="p-4 bg-primary text-white text-center">
-            <div class="avatar-circle mx-auto mb-3 bg-white text-primary fw-bold fs-3 d-flex align-items-center justify-content-center">
+      <div class="col-lg-3 col-md-4">
+        <div class="card swift-card sidebar-card overflow-hidden">
+          
+          <div class="sidebar-user-header p-4 text-center">
+            <div class="user-avatar-circle mx-auto mb-3">
               {{ currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'P' }}
             </div>
-            <h5 class="mb-1 fw-bold">{{ currentUser?.name }}</h5>
-            <p class="small mb-0 opacity-75">Logged in as Passenger</p>
+            <h5 class="mb-1 fw-bold text-white">{{ currentUser?.name || 'Passenger' }}</h5>
+            <span class="badge bg-yellow-light text-navy fw-semibold px-2.5 py-1 rounded-pill small">
+              <i class="bi bi-person-fill me-1"></i> Passenger Portal
+            </span>
           </div>
-          <div class="list-group list-group-flush py-2">
+          
+          <div class="list-group list-group-flush sidebar-menu py-2">
             <button (click)="setActiveTab('overview')" 
                [class.active]="activeTab === 'overview'" 
                class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 border-0">
-              <i class="bi bi-grid-1x2-fill fs-5"></i> Dashboard Overview
+              <i class="bi bi-grid-1x2-fill fs-5"></i> 
+              <span>Dashboard Overview</span>
             </button>
+            
             <button (click)="setActiveTab('book')" 
                [class.active]="activeTab === 'book'" 
                class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 border-0">
-              <i class="bi bi-bookmark-plus-fill fs-5"></i> Book a Cab
+              <i class="bi bi-bookmark-plus-fill fs-5"></i> 
+              <span>Book a Cab</span>
             </button>
+            
             <button (click)="setActiveTab('active')" 
                [class.active]="activeTab === 'active'" 
                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 border-0">
               <div class="d-flex align-items-center gap-3">
-                <i class="bi bi-radar fs-5"></i> Active Ride
+                <i class="bi bi-radar fs-5"></i> 
+                <span>Active Ride</span>
               </div>
               @if (activeRide) {
-                <span class="badge bg-warning text-dark">{{ activeRide.status }}</span>
+                <span class="badge" [ngClass]="{
+                  'badge-status-requested': activeRide.status === 'REQUESTED',
+                  'badge-status-accepted': activeRide.status === 'ACCEPTED',
+                  'badge-status-ongoing': activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE',
+                  'badge-status-completed': activeRide.status === 'COMPLETED',
+                  'badge-status-cancelled': activeRide.status === 'CANCELLED'
+                }">{{ activeRide.status }}</span>
               }
             </button>
+            
             <button (click)="setActiveTab('history')" 
                [class.active]="activeTab === 'history'" 
                class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 border-0">
-              <i class="bi bi-clock-history fs-5"></i> Ride History
+              <i class="bi bi-clock-history fs-5"></i> 
+              <span>Ride History</span>
             </button>
+            
             <button (click)="setActiveTab('profile')" 
                [class.active]="activeTab === 'profile'" 
                class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 border-0">
-              <i class="bi bi-person-fill-gear fs-5"></i> My Profile
+              <i class="bi bi-person-fill-gear fs-5"></i> 
+              <span>My Profile</span>
             </button>
           </div>
+          
           <div class="card-footer bg-light border-0 p-3">
             <button (click)="logout()" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
               <i class="bi bi-box-arrow-right"></i> Logout
             </button>
           </div>
+
         </div>
       </div>
 
-      <div class="col-md-9">
+      <div class="col-lg-9 col-md-8">
         
         @if (message) {
-          <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
-            <i class="bi bi-check-circle-fill"></i>
-            <div>{{ message }}</div>
+          <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2 mb-4 animate-fade-in-up" role="alert">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div class="fw-medium">{{ message }}</div>
             <button type="button" class="btn-close" (click)="message = ''" aria-label="Close"></button>
           </div>
         }
 
         @if (activeTab === 'overview') {
-          <div>
+          <div class="animate-fade-in-up">
             <div class="mb-4">
-              <h3 class="fw-bold text-dark mb-1">Welcome back, {{ currentUser?.name }}!</h3>
-              <p class="text-muted mb-0">Here is a quick summary of your activity and recent booking history.</p>
+              <h3 class="fw-bold text-navy mb-1">Welcome back, {{ currentUser?.name }}!</h3>
+              <p class="text-secondary small mb-0">Here is your trip summary, quick booking shortcuts, and recent activity logs.</p>
             </div>
 
+            @if (showRatingForm) {
+              <div class="alert alert-success border-success rounded-3 mb-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-2 animate-fade-in-up">
+                <div class="d-flex align-items-center gap-3">
+                  <i class="bi bi-star-fill text-warning fs-3"></i>
+                  <div>
+                    <strong class="text-navy">Trip #{{ ratedRideId }} Completed!</strong>
+                    <div class="small text-secondary">Please rate your driver and leave trip feedback.</div>
+                  </div>
+                </div>
+                <button (click)="setActiveTab('active')" class="btn btn-swift-yellow btn-sm fw-bold shadow-sm">
+                  <i class="bi bi-star-half me-1"></i> Rate Trip Now
+                </button>
+              </div>
+            }
+
+            @if (activeRide) {
+              <div class="alert alert-warning border-warning rounded-3 mb-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-2 animate-fade-in-up">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="spinner-grow spinner-grow-sm text-warning" role="status"></span>
+                  <div>
+                    <strong class="text-navy">Active Dispatch Job #{{ activeRide.id || activeRide.Id }} ({{ activeRide.status }})</strong>
+                    <div class="small text-secondary">
+                      @if (activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE') {
+                        <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Passenger Picked Up — In transit to destination</span>
+                      } @else if (activeRide.status === 'ACCEPTED') {
+                        <span class="text-primary fw-semibold"><i class="bi bi-car-front-fill me-1"></i>Driver accepted — Arriving at your pickup point</span>
+                      } @else {
+                        <span>Ride requested — Searching for nearest driver</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <button (click)="setActiveTab('active')" class="btn btn-swift-yellow btn-sm fw-bold shadow-sm">
+                  <i class="bi bi-radar me-1"></i> Track Live Ride
+                </button>
+              </div>
+            }
+
             <div class="row g-3 mb-4">
-              <div class="col-md-3 col-sm-6">
-                <div class="card border-0 shadow-sm rounded-3 bg-white p-3 text-center">
-                  <div class="text-primary fs-3 mb-2"><i class="bi bi-car-front-fill"></i></div>
-                  <h3 class="fw-bold text-dark mb-0">{{ totalRides }}</h3>
-                  <span class="text-muted small">Total Rides</span>
+              <div class="col-xl-3 col-sm-6">
+                <div class="card swift-card p-3.5 text-center h-100">
+                  <div class="kpi-icon-bubble bg-navy text-yellow mx-auto mb-2">
+                    <i class="bi bi-car-front-fill"></i>
+                  </div>
+                  <h3 class="fw-extrabold text-navy mb-0">{{ totalRides }}</h3>
+                  <span class="text-secondary small fw-medium">Total Bookings</span>
                 </div>
               </div>
-              <div class="col-md-3 col-sm-6">
-                <div class="card border-0 shadow-sm rounded-3 bg-white p-3 text-center">
-                  <div class="text-success fs-3 mb-2"><i class="bi bi-check-circle-fill"></i></div>
-                  <h3 class="fw-bold text-dark mb-0">{{ completedRides }}</h3>
-                  <span class="text-muted small">Completed Rides</span>
+              
+              <div class="col-xl-3 col-sm-6">
+                <div class="card swift-card p-3.5 text-center h-100">
+                  <div class="kpi-icon-bubble bg-success-subtle text-success mx-auto mb-2">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </div>
+                  <h3 class="fw-extrabold text-navy mb-0">{{ completedRides }}</h3>
+                  <span class="text-secondary small fw-medium">Completed Trips</span>
                 </div>
               </div>
-              <div class="col-md-3 col-sm-6">
-                <div class="card border-0 shadow-sm rounded-3 bg-white p-3 text-center">
-                  <div class="text-danger fs-3 mb-2"><i class="bi bi-x-circle-fill"></i></div>
-                  <h3 class="fw-bold text-dark mb-0">{{ cancelledRides }}</h3>
-                  <span class="text-muted small">Cancelled Rides</span>
+              
+              <div class="col-xl-3 col-sm-6">
+                <div class="card swift-card p-3.5 text-center h-100">
+                  <div class="kpi-icon-bubble bg-danger-subtle text-danger mx-auto mb-2">
+                    <i class="bi bi-x-circle-fill"></i>
+                  </div>
+                  <h3 class="fw-extrabold text-navy mb-0">{{ cancelledRides }}</h3>
+                  <span class="text-secondary small fw-medium">Cancelled Trips</span>
                 </div>
               </div>
-              <div class="col-md-3 col-sm-6">
-                <div class="card border-0 shadow-sm rounded-3 bg-white p-3 text-center">
-                  <div class="text-warning fs-3 mb-2"><i class="bi bi-wallet2"></i></div>
-                  <h3 class="fw-bold text-dark mb-0">₹{{ totalSpent | number:'1.2-2' }}</h3>
-                  <span class="text-muted small">Total Amount Spent</span>
+              
+              <div class="col-xl-3 col-sm-6">
+                <div class="card swift-card p-3.5 text-center h-100">
+                  <div class="kpi-icon-bubble bg-yellow-light text-navy mx-auto mb-2">
+                    <i class="bi bi-wallet2"></i>
+                  </div>
+                  <h3 class="fw-extrabold text-navy mb-0">₹{{ totalSpent | number:'1.2-2' }}</h3>
+                  <span class="text-secondary small fw-medium">Total Spent</span>
                 </div>
               </div>
             </div>
 
             <div class="row g-4">
               <div class="col-lg-6">
-                <div class="card shadow-sm border-0 bg-white rounded-3 p-4 h-100">
-                  <h5 class="fw-bold text-dark mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Actions</h5>
+                <div class="card swift-card p-4 h-100">
+                  <h5 class="fw-bold text-navy mb-3">
+                    <i class="bi bi-lightning-charge-fill text-yellow me-2"></i>Quick Actions
+                  </h5>
                   <div class="row g-3">
                     <div class="col-6">
-                      <button (click)="setActiveTab('book')" class="btn btn-outline-primary py-3 w-100 rounded-3 d-flex flex-column align-items-center gap-2">
-                        <i class="bi bi-plus-circle fs-3"></i>
-                        <span class="fw-semibold">Book a Cab</span>
+                      <button (click)="setActiveTab('book')" class="btn btn-quick-action w-100 p-3 rounded-3 d-flex flex-column align-items-center gap-2">
+                        <i class="bi bi-plus-circle-fill fs-3 text-navy"></i>
+                        <span class="fw-bold text-navy small">Book a Cab</span>
                       </button>
                     </div>
                     <div class="col-6">
-                      <button (click)="setActiveTab('active')" class="btn btn-outline-success py-3 w-100 rounded-3 d-flex flex-column align-items-center gap-2">
-                        <i class="bi bi-radar fs-3"></i>
-                        <span class="fw-semibold">Active Ride</span>
+                      <button (click)="setActiveTab('active')" class="btn btn-quick-action w-100 p-3 rounded-3 d-flex flex-column align-items-center gap-2">
+                        <i class="bi bi-radar fs-3 text-primary"></i>
+                        <span class="fw-bold text-navy small">Active Ride</span>
                       </button>
                     </div>
                     <div class="col-6">
-                      <button (click)="setActiveTab('history')" class="btn btn-outline-info py-3 w-100 rounded-3 d-flex flex-column align-items-center gap-2">
-                        <i class="bi bi-clock-history fs-3"></i>
-                        <span class="fw-semibold">Ride History</span>
+                      <button (click)="setActiveTab('history')" class="btn btn-quick-action w-100 p-3 rounded-3 d-flex flex-column align-items-center gap-2">
+                        <i class="bi bi-clock-history fs-3 text-success"></i>
+                        <span class="fw-bold text-navy small">Ride History</span>
                       </button>
                     </div>
                     <div class="col-6">
-                      <button (click)="setActiveTab('profile')" class="btn btn-outline-secondary py-3 w-100 rounded-3 d-flex flex-column align-items-center gap-2">
-                        <i class="bi bi-person-fill-gear fs-3"></i>
-                        <span class="fw-semibold">Edit Profile</span>
+                      <button (click)="setActiveTab('profile')" class="btn btn-quick-action w-100 p-3 rounded-3 d-flex flex-column align-items-center gap-2">
+                        <i class="bi bi-person-fill-gear fs-3 text-secondary"></i>
+                        <span class="fw-bold text-navy small">Edit Profile</span>
                       </button>
                     </div>
                   </div>
@@ -140,22 +212,25 @@
               </div>
 
               <div class="col-lg-6">
-                <div class="card shadow-sm border-0 bg-white rounded-3 p-4 h-100">
+                <div class="card swift-card p-4 h-100">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bell-fill text-primary me-2"></i>Activity Logs</h5>
+                    <h5 class="fw-bold text-navy mb-0">
+                      <i class="bi bi-bell-fill text-yellow me-2"></i>Activity Stream
+                    </h5>
                     @if (notifications.length > 0) {
-                      <button (click)="clearNotifications()" class="btn btn-link text-muted btn-sm p-0 text-decoration-none">Clear All</button>
+                      <button (click)="clearNotifications()" class="btn btn-link text-secondary btn-sm p-0 text-decoration-none">Clear All</button>
                     }
                   </div>
                   <div class="notifications-wrapper overflow-auto" style="max-height: 220px;">
                     @for (notif of notifications; track $index) {
-                      <div class="p-2 border-bottom border-light rounded mb-2 bg-light small text-dark">
-                        {{ notif }}
+                      <div class="p-2.5 border-bottom rounded mb-2 bg-light small text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-right-circle text-yellow flex-shrink-0"></i>
+                        <span>{{ notif }}</span>
                       </div>
                     } @empty {
                       <div class="text-center py-5 text-muted small">
                         <i class="bi bi-bell-slash fs-2 mb-2 d-block text-muted opacity-50"></i>
-                        No recent activities.
+                        No recent activities recorded.
                       </div>
                     }
                   </div>
@@ -166,99 +241,139 @@
         }
 
         @if (activeTab === 'book') {
-          <div>
+          <div class="animate-fade-in-up">
             <div class="mb-4">
-              <h3 class="fw-bold text-dark mb-1">Book a New Ride</h3>
-              <p class="text-muted mb-0">Compute road coordinates, check real OSRM path distance, and get backend fare estimates.</p>
+              <h3 class="fw-bold text-navy mb-1">Book a New Ride</h3>
+              <p class="text-secondary small mb-0">Calculate accurate OSRM road coordinates, view real-time distance, and request instant dispatch.</p>
             </div>
 
             <div class="row g-4">
               <div class="col-lg-5">
-                <div class="card shadow-sm border-0 bg-white rounded-3 p-4">
-                  <h5 class="fw-bold text-primary mb-4"><i class="bi bi-calendar2-check-fill me-2"></i>Booking Details</h5>
+                <div class="card swift-card p-4">
+                  <h5 class="fw-bold text-navy mb-4 pb-2 border-bottom">
+                    <i class="bi bi-calendar2-check-fill text-yellow me-2"></i>Trip Details
+                  </h5>
                   
                   @if (bookingError) {
-                    <div class="alert alert-danger border-0 small py-2 mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ bookingError }}</div>
+                    <div class="alert alert-danger border-0 small py-2 px-3 mb-3 rounded-3 d-flex align-items-center gap-2">
+                      <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                      <div>{{ bookingError }}</div>
+                    </div>
                   }
                   @if (bookingSuccess) {
-                    <div class="alert alert-success border-0 small py-2 mb-3"><i class="bi bi-check-circle-fill me-2"></i>{{ bookingSuccess }}</div>
+                    <div class="alert alert-success border-0 small py-2 px-3 mb-3 rounded-3 d-flex align-items-center gap-2">
+                      <i class="bi bi-check-circle-fill text-success"></i>
+                      <div>{{ bookingSuccess }}</div>
+                    </div>
                   }
 
                   <form (ngSubmit)="calculateFare()">
                     <div class="mb-3">
-                      <label class="form-label small text-muted fw-bold">Pickup Location</label>
+                      <label class="form-label">
+                        <i class="bi bi-geo-alt-fill text-success me-1"></i> Pickup Location
+                      </label>
                       <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-geo-alt-fill text-success"></i></span>
-                        <input type="text" [(ngModel)]="pickupAddress" name="pickupAddress" (ngModelChange)="onBookFormChange()" class="form-control" placeholder="e.g. Chennai Central" required>
+                        <span class="input-group-text"><i class="bi bi-geo-alt text-success fs-5"></i></span>
+                        <input 
+                          type="text" 
+                          [(ngModel)]="pickupAddress" 
+                          name="pickupAddress" 
+                          (ngModelChange)="onBookFormChange()" 
+                          class="form-control" 
+                          placeholder="e.g. Chennai Central" 
+                          required>
                       </div>
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label small text-muted fw-bold">Drop-off Location</label>
+                      <label class="form-label">
+                        <i class="bi bi-flag-fill text-danger me-1"></i> Drop-off Location
+                      </label>
                       <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-flag-fill text-danger"></i></span>
-                        <input type="text" [(ngModel)]="dropAddress" name="dropAddress" (ngModelChange)="onBookFormChange()" class="form-control" placeholder="e.g. T Nagar" required>
+                        <span class="input-group-text"><i class="bi bi-flag text-danger fs-5"></i></span>
+                        <input 
+                          type="text" 
+                          [(ngModel)]="dropAddress" 
+                          name="dropAddress" 
+                          (ngModelChange)="onBookFormChange()" 
+                          class="form-control" 
+                          placeholder="e.g. T. Nagar" 
+                          required>
                       </div>
                     </div>
 
                     <div class="mb-4">
-                      <label class="form-label small text-muted fw-bold">Date of Travel</label>
+                      <label class="form-label">
+                        <i class="bi bi-calendar-event-fill text-navy me-1"></i> Date of Travel
+                      </label>
                       <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
-                        <input type="date" [(ngModel)]="travelDate" name="travelDate" (ngModelChange)="onBookFormChange()" class="form-control" required>
+                        <span class="input-group-text"><i class="bi bi-calendar-event text-navy fs-5"></i></span>
+                        <input 
+                          type="date" 
+                          [(ngModel)]="travelDate" 
+                          name="travelDate" 
+                          (ngModelChange)="onBookFormChange()" 
+                          class="form-control" 
+                          required>
                       </div>
                     </div>
 
-                    <button type="submit" [disabled]="bookingLoading" class="btn btn-secondary w-100 py-2 fw-semibold mb-3">
+                    <button type="submit" [disabled]="bookingLoading" class="btn btn-swift-yellow w-100 py-2.5 fw-bold mb-3 shadow-sm">
                       @if (bookingLoading) {
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>Calculating...
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>Calculating Fare...
                       } @else {
-                        <i class="bi bi-calculator me-1"></i> Calculate Distance & Fare
+                        <i class="bi bi-calculator-fill me-1"></i> Calculate Distance &amp; Fare
                       }
                     </button>
                   </form>
 
                   @if (distanceKm !== null && calculatedFare !== null) {
-                    <div class="p-3 bg-light border rounded mb-4">
-                      <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Fare breakdown</h6>
+                    <div class="p-3 bg-light border rounded-3 mb-4 animate-fade-in-up">
+                      <h6 class="fw-bold text-navy border-bottom pb-2 mb-3">Fare Breakdown</h6>
                       <div class="d-flex justify-content-between small mb-2">
-                        <span class="text-muted">Base Fare</span>
-                        <span class="text-dark fw-semibold">₹50.00</span>
+                        <span class="text-secondary">Base Fare</span>
+                        <span class="text-navy fw-semibold">₹50.00</span>
                       </div>
                       <div class="d-flex justify-content-between small mb-2">
-                        <span class="text-muted">Calculated Distance</span>
-                        <span class="text-dark fw-semibold">{{ distanceKm }} km</span>
+                        <span class="text-secondary">Calculated Distance</span>
+                        <span class="text-navy fw-semibold">{{ distanceKm }} km</span>
                       </div>
                       <div class="d-flex justify-content-between small mb-2">
-                        <span class="text-muted">Rate per kilometer</span>
-                        <span class="text-dark fw-semibold">₹15.00/km</span>
+                        <span class="text-secondary">Rate per Kilometer</span>
+                        <span class="text-navy fw-semibold">₹15.00 / km</span>
                       </div>
                       <div class="d-flex justify-content-between small mb-3">
-                        <span class="text-muted">Distance Fare</span>
-                        <span class="text-dark fw-semibold">₹{{ (distanceKm * 15) | number:'1.2-2' }}</span>
+                        <span class="text-secondary">Distance Fare</span>
+                        <span class="text-navy fw-semibold">₹{{ (distanceKm * 15) | number:'1.2-2' }}</span>
                       </div>
                       <div class="d-flex justify-content-between border-top pt-2 fs-5">
-                        <span class="fw-bold text-dark">Total Fare</span>
-                        <span class="fw-bold text-primary">₹{{ calculatedFare | number:'1.2-2' }}</span>
+                        <span class="fw-bold text-navy">Total Fare</span>
+                        <span class="fw-extrabold text-navy">₹{{ calculatedFare | number:'1.2-2' }}</span>
                       </div>
                     </div>
 
-                    <button (click)="requestRide()" [disabled]="bookingLoading" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow">
-                      Confirm & Request Ride
+                    <button (click)="requestRide()" [disabled]="bookingLoading" class="btn btn-swift-yellow w-100 py-3 fw-bold rounded-3 shadow">
+                      <i class="bi bi-send-check-fill me-1"></i> Confirm &amp; Request Ride
                     </button>
                   }
                 </div>
               </div>
 
               <div class="col-lg-7">
-                <div class="card shadow-sm border-0 bg-white rounded-3 p-3">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-map me-2"></i>Route Preview Map</h6>
+                <div class="card swift-card p-3 h-100 d-flex flex-column">
+                  <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                    <h6 class="fw-bold text-navy mb-0">
+                      <i class="bi bi-map-fill text-yellow me-2"></i>Route Preview Map
+                    </h6>
                     @if (distanceKm) {
-                      <span class="badge bg-primary">Distance: {{ distanceKm }} km</span>
+                      <span class="badge bg-navy text-yellow px-3 py-1.5 rounded-pill">
+                        Distance: {{ distanceKm }} km
+                      </span>
                     }
                   </div>
-                  <div id="bookingMap" class="rounded border" style="height: 480px; min-height: 400px; z-index: 1;"></div>
+                  <div class="flex-grow-1 rounded-3 overflow-hidden border map-wrapper" style="min-height: 440px;">
+                    <div id="bookingMap" class="w-100 h-100" style="min-height: 440px; z-index: 1;"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -266,175 +381,287 @@
         }
 
         @if (activeTab === 'active') {
-          <div>
+          <div class="animate-fade-in-up">
             <div class="mb-4">
-              <h3 class="fw-bold text-dark mb-1">Track Active Ride</h3>
-              <p class="text-muted mb-0">Follow your booking state and driver coordinates updates in real-time.</p>
+              <h3 class="fw-bold text-navy mb-1">Track Active Ride</h3>
+              <p class="text-secondary small mb-0">Follow real-time dispatch progress, driver updates, and route details.</p>
             </div>
 
             @if (activeRide) {
-              <div class="card shadow-sm border-0 bg-white rounded-3 p-4 mb-4">
-                <div class="stepper-wrapper d-flex justify-content-between text-center position-relative mb-4">
+              
+              @if (activeRide.status === 'REQUESTED') {
+                <div class="alert alert-warning border-warning rounded-3 mb-4 shadow-sm d-flex align-items-center gap-3">
+                  <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                  <div>
+                    <strong class="text-dark d-block">Booking Confirmed &amp; Requested</strong>
+                    <span class="text-secondary small">Searching for nearby available drivers. You will be notified immediately once a driver accepts your ride.</span>
+                  </div>
+                </div>
+              }
+
+              @if (activeRide.status === 'ACCEPTED') {
+                <div class="alert alert-primary border-primary rounded-3 mb-4 shadow-sm d-flex align-items-center gap-3 animate-fade-in-up">
+                  <i class="bi bi-clock-history fs-3 text-primary"></i>
+                  <div>
+                    <strong class="text-primary d-block">Driver Assigned &amp; Arriving</strong>
+                    <span class="text-dark small">Driver <strong>{{ activeRide.driver?.user?.name || 'Driver' }}</strong> has accepted and is reaching your pickup location. Please wait at the pickup point.</span>
+                  </div>
+                </div>
+              }
+
+              @if (activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE') {
+                <div class="alert alert-success border-success rounded-3 mb-4 shadow-sm d-flex align-items-center gap-3 animate-fade-in-up">
+                  <i class="bi bi-shield-check fs-2 text-success"></i>
+                  <div>
+                    <strong class="text-success fs-6 d-block">Passenger Picked Up — Ride in Progress</strong>
+                    <span class="text-dark small">Driver <strong>{{ activeRide.driver?.user?.name || 'Driver' }}</strong> has picked you up. You are currently in transit towards <strong>{{ getLandmarkName(activeRide.dropLat, activeRide.dropLng) }}</strong>.</span>
+                  </div>
+                </div>
+              }
+
+              <div class="card swift-card p-4 mb-4">
+                <div class="stepper-wrapper d-flex justify-content-between text-center position-relative mb-2">
                   <div class="stepper-line position-absolute start-0 end-0 bg-light" style="height: 4px; top: 18px; z-index: 1;"></div>
                   <div class="stepper-line-active position-absolute start-0 bg-success" style="height: 4px; top: 18px; z-index: 1;" 
-                       [style.width.%]="activeRide.status === 'REQUESTED' ? 10 : (activeRide.status === 'ACCEPTED' ? 50 : (activeRide.status === 'IN_RIDE' ? 85 : 100))"></div>
+                       [style.width.%]="activeRide.status === 'REQUESTED' ? 0 : (activeRide.status === 'ACCEPTED' ? 33 : ((activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE') ? 66 : 100))"></div>
                   
-                  <div class="step-node position-relative" style="z-index: 2;" [class.completed]="true">
-                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-success text-white rounded-circle" style="width: 38px; height: 38px;"><i class="bi bi-check-lg"></i></div>
-                    <span class="small fw-semibold text-dark">Booked</span>
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 40px; height: 40px;">
+                      <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">1. Booked</span>
                   </div>
-                  <div class="step-node position-relative" style="z-index: 2;" [class.completed]="activeRide.status !== 'REQUESTED'">
-                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 38px; height: 38px;" 
-                         [ngClass]="activeRide.status !== 'REQUESTED' ? 'bg-success text-white' : 'bg-white border text-muted'"><i class="bi bi-person-check"></i></div>
-                    <span class="small fw-semibold text-dark">Driver Assigned</span>
+                  
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle shadow-sm" style="width: 40px; height: 40px;" 
+                         [ngClass]="activeRide.status !== 'REQUESTED' ? 'bg-success text-white' : 'bg-white border text-muted'">
+                      <i class="bi" [ngClass]="activeRide.status !== 'REQUESTED' ? 'bi-check-lg' : 'bi-person-check-fill'"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">2. Driver Assigned</span>
                   </div>
-                  <div class="step-node position-relative" style="z-index: 2;" [class.completed]="activeRide.status === 'IN_RIDE'">
-                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 38px; height: 38px;" 
-                         [ngClass]="activeRide.status === 'IN_RIDE' ? 'bg-success text-white' : 'bg-white border text-muted'"><i class="bi bi-play-fill"></i></div>
-                    <span class="small fw-semibold text-dark">Ongoing Ride</span>
+                  
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle shadow-sm" style="width: 40px; height: 40px;" 
+                         [ngClass]="(activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE' || activeRide.status === 'COMPLETED') ? 'bg-success text-white' : 'bg-white border text-muted'">
+                      <i class="bi" [ngClass]="activeRide.status === 'COMPLETED' ? 'bi-check-lg' : ((activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE') ? 'bi-car-front-fill' : 'bi-car-front')"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">3. Passenger Picked Up (In Transit)</span>
+                  </div>
+
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle shadow-sm" style="width: 40px; height: 40px;" 
+                         [ngClass]="activeRide.status === 'COMPLETED' ? 'bg-success text-white' : 'bg-white border text-muted'">
+                      <i class="bi" [ngClass]="activeRide.status === 'COMPLETED' ? 'bi-patch-check-fill' : 'bi-flag-fill'"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">4. Ride Completed</span>
                   </div>
                 </div>
               </div>
 
               <div class="row g-4">
                 <div class="col-lg-5">
-                  <div class="card shadow-sm border-0 bg-white rounded-3 p-4 h-100">
+                  <div class="card swift-card p-4 h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-                      <h5 class="fw-bold text-dark mb-0">Ride #{{ activeRide.Id }}</h5>
-                      <span class="badge bg-primary text-white fs-6 py-2 px-3">{{ activeRide.status }}</span>
+                      <h5 class="fw-bold text-navy mb-0">Booking #{{ activeRide.id || activeRide.Id }}</h5>
+                      <span class="badge px-3 py-1.5" [ngClass]="{
+                        'badge-status-requested': activeRide.status === 'REQUESTED',
+                        'badge-status-accepted': activeRide.status === 'ACCEPTED',
+                        'badge-status-ongoing': activeRide.status === 'ONGOING' || activeRide.status === 'IN_RIDE',
+                        'badge-status-completed': activeRide.status === 'COMPLETED',
+                        'badge-status-cancelled': activeRide.status === 'CANCELLED'
+                      }">{{ activeRide.status }}</span>
                     </div>
 
                     <div class="mb-4">
                       <div class="d-flex align-items-start gap-3 mb-3">
                         <div class="fs-4 text-success"><i class="bi bi-geo-alt-fill"></i></div>
                         <div>
-                          <span class="text-muted small d-block">Pickup Location</span>
-                          <strong class="text-dark">{{ getLandmarkName(activeRide.pickupLat, activeRide.pickupLng) }}</strong>
+                          <span class="text-secondary small d-block">Pickup Location</span>
+                          <strong class="text-navy">{{ getLandmarkName(activeRide.pickupLat, activeRide.pickupLng) }}</strong>
                         </div>
                       </div>
 
                       <div class="d-flex align-items-start gap-3 mb-0">
                         <div class="fs-4 text-danger"><i class="bi bi-flag-fill"></i></div>
                         <div>
-                          <span class="text-muted small d-block">Drop-off Location</span>
-                          <strong class="text-dark">{{ getLandmarkName(activeRide.dropLat, activeRide.dropLng) }}</strong>
+                          <span class="text-secondary small d-block">Drop-off Location</span>
+                          <strong class="text-navy">{{ getLandmarkName(activeRide.dropLat, activeRide.dropLng) }}</strong>
                         </div>
                       </div>
                     </div>
 
                     @if (activeRide.driver) {
-                      <div class="p-3 bg-light border rounded mb-4">
-                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-badge me-2"></i>Assigned Driver</h6>
+                      <div class="p-3 bg-light border rounded-3 mb-4">
+                        <h6 class="fw-bold text-navy mb-3"><i class="bi bi-person-badge-fill text-yellow me-2"></i>Assigned Driver</h6>
                         <div class="d-flex justify-content-between small mb-2">
-                          <span class="text-muted">Driver Name</span>
-                          <span class="text-dark fw-bold">{{ activeRide.driver.user.name }}</span>
+                          <span class="text-secondary">Driver Name</span>
+                          <span class="text-navy fw-bold">{{ activeRide.driver.user.name }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
-                          <span class="text-muted">Phone Number</span>
-                          <span class="text-dark fw-bold">{{ activeRide.driver.user.phone }}</span>
+                          <span class="text-secondary">Phone Number</span>
+                          <span class="text-navy fw-bold">{{ activeRide.driver.user.phone }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
-                          <span class="text-muted">Vehicle Details</span>
-                          <span class="text-dark fw-bold">{{ activeRide.driver.vehicle.type }}</span>
+                          <span class="text-secondary">Vehicle Type</span>
+                          <span class="text-navy fw-bold">{{ activeRide.driver.vehicle.type }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-0">
-                          <span class="text-muted">License Plate</span>
-                          <span class="badge bg-secondary text-white">{{ activeRide.driver.vehicle.numberplate }}</span>
+                          <span class="text-secondary">License Plate</span>
+                          <span class="badge bg-navy text-yellow">{{ activeRide.driver.vehicle.numberplate }}</span>
                         </div>
                       </div>
                     } @else {
-                      <div class="text-center py-4 bg-light border rounded mb-4">
-                        <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
-                        <p class="text-muted small mb-0">Waiting for driver assignment...</p>
+                      <div class="text-center py-4 bg-light border rounded-3 mb-4">
+                        <div class="spinner-border spinner-border-sm text-warning mb-2" role="status"></div>
+                        <p class="text-secondary small mb-0">Finding nearest available driver...</p>
                       </div>
                     }
 
-                    <div class="d-flex justify-content-between align-items-center bg-light border rounded p-3 mb-4">
-                      <span class="text-muted fw-semibold">Fare Price</span>
-                      <strong class="text-primary fs-3">₹{{ activeRide.fare | number:'1.2-2' }}</strong>
+                    <div class="d-flex justify-content-between align-items-center bg-light border rounded-3 p-3 mb-4">
+                      <span class="text-secondary fw-semibold">Fare Price</span>
+                      <strong class="text-navy fs-4">₹{{ activeRide.fare | number:'1.2-2' }}</strong>
                     </div>
 
                     @if (activeRide.status === 'REQUESTED' || activeRide.status === 'ACCEPTED') {
-                      <button (click)="cancelRide()" class="btn btn-outline-danger w-100 py-3 fw-bold rounded-3">
-                        Cancel Booking
+                      <button (click)="cancelRide()" class="btn btn-outline-danger w-100 py-2.5 fw-bold rounded-3">
+                        <i class="bi bi-x-circle me-1"></i> Cancel Booking
                       </button>
                     }
                   </div>
                 </div>
 
                 <div class="col-lg-7">
-                  <div class="card shadow-sm border-0 bg-white rounded-3 p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h6 class="fw-bold text-dark mb-0"><i class="bi bi-radar me-2"></i>Live Route Tracking</h6>
-                      @if (driverLocation) {
-                        <span class="badge bg-warning text-dark"><i class="bi bi-car-front me-1"></i>Driver Active</span>
-                      }
+                  <div class="card swift-card p-3 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                      <h6 class="fw-bold text-navy mb-0">
+                        <i class="bi bi-radar text-yellow me-2"></i>Route Details
+                      </h6>
+                      <span class="badge bg-navy text-yellow">
+                        {{ activeRide.status }}
+                      </span>
                     </div>
-                    <div id="activeRideMap" class="rounded border" style="height: 480px; min-height: 400px; z-index: 1;"></div>
+                    <div class="flex-grow-1 rounded-3 overflow-hidden border map-wrapper" style="min-height: 440px;">
+                      <div id="activeRideMap" class="w-100 h-100" style="min-height: 440px; z-index: 1;"></div>
+                    </div>
                   </div>
                 </div>
               </div>
             } @else if (showRatingForm) {
+              <div class="card swift-card p-4 mb-4 animate-fade-in-up">
+                <div class="stepper-wrapper d-flex justify-content-between text-center position-relative mb-2">
+                  <div class="stepper-line position-absolute start-0 end-0 bg-light" style="height: 4px; top: 18px; z-index: 1;"></div>
+                  <div class="stepper-line-active position-absolute start-0 bg-success" style="height: 4px; top: 18px; z-index: 1; width: 100%;"></div>
+                  
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 40px; height: 40px;">
+                      <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">1. Booked</span>
+                  </div>
+                  
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 40px; height: 40px;">
+                      <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">2. Driver Assigned</span>
+                  </div>
+                  
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 40px; height: 40px;">
+                      <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">3. Passenger Picked Up</span>
+                  </div>
+
+                  <div class="step-node position-relative" style="z-index: 2;">
+                    <div class="circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 40px; height: 40px;">
+                      <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <span class="small fw-bold text-navy">4. Ride Completed</span>
+                  </div>
+                </div>
+              </div>
+
               <div class="row justify-content-center">
-                <div class="col-md-6">
-                  <div class="card shadow border-0 bg-white rounded-3 p-4 text-center">
-                    <div class="text-warning fs-1 mb-3"><i class="bi bi-star-fill"></i></div>
-                    <h4 class="fw-bold text-dark mb-1">Rate Your Trip</h4>
-                    <p class="text-muted small mb-4">Please submit your feedback to help us evaluate the driver performance.</p>
+                <div class="col-md-7 col-lg-6">
+                  <div class="card swift-card p-4 text-center animate-fade-in-up">
+                    <div class="text-yellow fs-1 mb-2"><i class="bi bi-star-fill"></i></div>
+                    <h4 class="fw-bold text-navy mb-1">Rate Your Trip #{{ ratedRideId }}</h4>
+                    <p class="text-secondary small mb-4">How was your trip experience? Your feedback helps improve service quality.</p>
                     
                     <form (ngSubmit)="submitRating()">
                       <div class="mb-4">
-                        <div class="stars-picker d-flex justify-content-center gap-3">
+                        <div class="stars-picker d-flex justify-content-center align-items-center gap-3">
                           @for (star of [1,2,3,4,5]; track star) {
                             <i 
                               (click)="ratingData.rating = star"
-                              class="bi fs-1 cursor-pointer transition-all"
-                              [ngClass]="ratingData.rating >= star ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"
+                              class="bi fs-1 cursor-pointer"
+                              [ngClass]="ratingData.rating >= star ? 'bi-star-fill text-yellow' : 'bi-star text-muted'"
                               style="cursor: pointer;">
                             </i>
                           }
                         </div>
+                        <div class="mt-2 fw-bold text-navy small">Selected: {{ ratingData.rating }} of 5 Stars</div>
                       </div>
 
                       <div class="mb-4 text-start">
-                        <label class="form-label text-muted small fw-bold" for="feedback">Leave a Comment</label>
-                        <textarea name="feedback" [(ngModel)]="ratingData.feedback" class="form-control" placeholder="Write feedback details..." rows="3" required></textarea>
+                        <label class="form-label" for="feedback">Trip Feedback &amp; Driver Comments</label>
+                        <textarea 
+                          id="feedback"
+                          name="feedback" 
+                          [(ngModel)]="ratingData.feedback" 
+                          class="form-control" 
+                          placeholder="e.g. Great driving, polite behavior, on-time pickup!" 
+                          rows="3" 
+                          required></textarea>
                       </div>
 
-                      <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow">
-                        Submit Feedback
+                      <button type="submit" [disabled]="submittingRating" class="btn btn-swift-yellow w-100 py-3 fw-bold rounded-3 shadow">
+                        @if (submittingRating) {
+                          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                          <span>Submitting Rating...</span>
+                        } @else {
+                          <i class="bi bi-send-check-fill me-1"></i>
+                          <span>Submit Feedback</span>
+                        }
                       </button>
                     </form>
                   </div>
                 </div>
               </div>
             } @else {
-              <div class="card shadow-sm border-0 bg-white rounded-3 p-5 text-center">
-                <i class="bi bi-radar text-muted fs-1 mb-3 opacity-50"></i>
-                <h5 class="fw-bold text-dark">No active ride at the moment</h5>
-                <p class="text-muted small mb-4">Need to go somewhere? Request a ride to get started.</p>
-                <button (click)="setActiveTab('book')" class="btn btn-primary px-4 py-2 fw-semibold rounded-3">Book a Cab Now</button>
+              <div class="card swift-card p-5 text-center">
+                <div class="auth-icon-bubble mx-auto mb-3">
+                  <i class="bi bi-radar text-yellow fs-2"></i>
+                </div>
+                <h5 class="fw-bold text-navy">No Active Ride Right Now</h5>
+                <p class="text-secondary small mb-4">Ready to go somewhere? Request a swift ride across the city.</p>
+                <div>
+                  <button (click)="setActiveTab('book')" class="btn btn-swift-yellow px-4 py-2.5 fw-bold rounded-3">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Book a Cab Now
+                  </button>
+                </div>
               </div>
             }
           </div>
         }
 
         @if (activeTab === 'history') {
-          <div>
+          <div class="animate-fade-in-up">
             <div class="mb-4">
-              <h3 class="fw-bold text-dark mb-1">Your Booking History</h3>
-              <p class="text-muted mb-0">Review details of previous trips and check feedback stats.</p>
+              <h3 class="fw-bold text-navy mb-1">Your Booking History</h3>
+              <p class="text-secondary small mb-0">Review past completed trips, fare receipts, and driver feedback.</p>
             </div>
 
-            <div class="card shadow-sm border-0 bg-white rounded-3 p-4">
+            <div class="card swift-card p-4">
               <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                   <thead class="table-light">
-                    <tr class="text-dark small fw-bold">
+                    <tr class="text-navy small fw-bold">
                       <th>ID</th>
                       <th>Date</th>
-                      <th>Driver details</th>
-                      <th>Distance & Route</th>
+                      <th>Driver Info</th>
+                      <th>Route Details</th>
                       <th>Amount</th>
                       <th>Status</th>
                       <th>Rating</th>
@@ -442,49 +669,51 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (history of rideHistory; track history.Id) {
-                      <tr class="border-bottom border-light">
-                        <td class="fw-semibold">#{{ history.Id }}</td>
-                        <td class="small text-muted">{{ history.requestedAt | date:'medium' }}</td>
+                    @for (history of rideHistory; track history.id || history.Id) {
+                      <tr>
+                        <td class="fw-bold text-navy">#{{ history.id || history.Id }}</td>
+                        <td class="small text-secondary">{{ history.requestedAt | date:'mediumDate' }}</td>
                         <td>
                           @if (history.driver) {
-                            <strong>{{ history.driver.user.name }}</strong>
-                            <div class="small text-muted">{{ history.driver.vehicle.type }} ({{ history.driver.vehicle.numberplate }})</div>
+                            <strong class="text-navy">{{ history.driver.user.name }}</strong>
+                            <div class="small text-secondary">{{ history.driver.vehicle.type }} ({{ history.driver.vehicle.numberplate }})</div>
                           } @else {
                             <span class="text-muted small">None Assigned</span>
                           }
                         </td>
                         <td class="small">
                           <div><span class="badge bg-success bg-opacity-10 text-success me-1">Pickup</span> {{ getLandmarkName(history.pickupLat, history.pickupLng) }}</div>
-                          <div class="mt-1"><span class="badge bg-danger bg-opacity-10 text-danger me-1">Drop-off</span> {{ getLandmarkName(history.dropLat, history.dropLng) }}</div>
+                          <div class="mt-1"><span class="badge bg-danger bg-opacity-10 text-danger me-1">Drop</span> {{ getLandmarkName(history.dropLat, history.dropLng) }}</div>
                         </td>
-                        <td class="text-primary fw-bold">₹{{ history.fare | number:'1.2-2' }}</td>
+                        <td class="text-navy fw-bold">₹{{ history.fare | number:'1.2-2' }}</td>
                         <td>
-                          <span class="badge rounded-pill px-2.5 py-1" [ngClass]="{
-                            'bg-success': history.status === 'COMPLETED',
-                            'bg-danger': history.status === 'CANCELLED',
-                            'bg-warning text-dark': history.status === 'REQUESTED',
-                            'bg-info text-dark': history.status === 'ACCEPTED',
-                            'bg-primary': history.status === 'IN_RIDE'
+                          <span class="badge" [ngClass]="{
+                            'badge-status-requested': history.status === 'REQUESTED',
+                            'badge-status-accepted': history.status === 'ACCEPTED',
+                            'badge-status-ongoing': history.status === 'ONGOING' || history.status === 'IN_RIDE',
+                            'badge-status-completed': history.status === 'COMPLETED',
+                            'badge-status-cancelled': history.status === 'CANCELLED'
                           }">
                             {{ history.status }}
                           </span>
                         </td>
                         <td>
                           @if (history.rating) {
-                            <div class="text-warning small d-flex gap-0.5">
+                            <div class="text-yellow small d-flex gap-1">
                               @for (s of [1,2,3,4,5]; track s) {
                                 <i class="bi" [ngClass]="history.rating >= s ? 'bi-star-fill' : 'bi-star text-muted'"></i>
                               }
                             </div>
                           } @else if (history.status === 'COMPLETED') {
-                            <button (click)="ratedRideId = history.Id; showRatingForm = true; setActiveTab('active')" class="btn btn-outline-warning btn-sm py-0.5 px-2 small">Rate Driver</button>
+                            <button (click)="openRatingForRide(history.id || history.Id)" class="btn btn-outline-warning btn-sm py-0.5 px-2 small">Rate</button>
                           } @else {
                             <span class="text-muted">--</span>
                           }
                         </td>
                         <td class="text-end">
-                          <button (click)="viewRideDetails(history)" class="btn btn-outline-primary btn-sm px-3 rounded-pill">Details</button>
+                          <button (click)="viewRideDetails(history)" class="btn btn-swift-navy-outline btn-sm px-3 rounded-pill">
+                            Details
+                          </button>
                         </td>
                       </tr>
                     } @empty {
@@ -503,50 +732,58 @@
         }
 
         @if (activeTab === 'profile') {
-          <div>
+          <div class="animate-fade-in-up">
             <div class="mb-4">
-              <h3 class="fw-bold text-dark mb-1">My Profile Setting</h3>
-              <p class="text-muted mb-0">View or update your registered name, email address, and phone number details.</p>
+              <h3 class="fw-bold text-navy mb-1">My Profile Settings</h3>
+              <p class="text-secondary small mb-0">Manage your contact information and security settings.</p>
             </div>
 
-            <div class="row">
+            <div class="row g-4">
               <div class="col-md-7">
-                <div class="card shadow-sm border-0 bg-white rounded-3 p-4">
-                  <h5 class="fw-bold text-dark mb-4 border-bottom pb-2"><i class="bi bi-person-fill-gear me-2 text-primary"></i>Profile Details</h5>
+                <div class="card swift-card p-4">
+                  <h5 class="fw-bold text-navy mb-4 border-bottom pb-2">
+                    <i class="bi bi-person-fill-gear text-yellow me-2"></i>Account Details
+                  </h5>
 
                   @if (profileError) {
-                    <div class="alert alert-danger border-0 small py-2 mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ profileError }}</div>
+                    <div class="alert alert-danger border-0 small py-2 px-3 mb-3 rounded-3 d-flex align-items-center gap-2">
+                      <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                      <div>{{ profileError }}</div>
+                    </div>
                   }
                   @if (profileSuccess) {
-                    <div class="alert alert-success border-0 small py-2 mb-3"><i class="bi bi-check-circle-fill me-2"></i>{{ profileSuccess }}</div>
+                    <div class="alert alert-success border-0 small py-2 px-3 mb-3 rounded-3 d-flex align-items-center gap-2">
+                      <i class="bi bi-check-circle-fill text-success"></i>
+                      <div>{{ profileSuccess }}</div>
+                    </div>
                   }
 
                   <form (ngSubmit)="saveProfile()">
                     <div class="mb-3">
-                      <label class="form-label text-muted small fw-bold">Full Name</label>
-                      <input type="text" [(ngModel)]="profileName" name="profileName" class="form-control py-2" required>
+                      <label class="form-label" for="profileName">Full Name</label>
+                      <input type="text" id="profileName" [(ngModel)]="profileName" name="profileName" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label text-muted small fw-bold">Email Address</label>
-                      <input type="email" [(ngModel)]="profileEmail" name="profileEmail" class="form-control py-2" required>
+                      <label class="form-label" for="profileEmail">Email Address</label>
+                      <input type="email" id="profileEmail" [(ngModel)]="profileEmail" name="profileEmail" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                      <label class="form-label text-muted small fw-bold">Phone Number</label>
-                      <input type="tel" [(ngModel)]="profilePhone" name="profilePhone" class="form-control py-2" required>
+                      <label class="form-label" for="profilePhone">Phone Number</label>
+                      <input type="tel" id="profilePhone" [(ngModel)]="profilePhone" name="profilePhone" class="form-control" required>
                     </div>
 
                     <div class="mb-4">
-                      <label class="form-label text-muted small fw-bold">Update Password (optional)</label>
-                      <input type="password" [(ngModel)]="profilePassword" name="profilePassword" class="form-control py-2" placeholder="Leave blank to keep current password">
+                      <label class="form-label" for="profilePassword">Update Password (optional)</label>
+                      <input type="password" id="profilePassword" [(ngModel)]="profilePassword" name="profilePassword" class="form-control" placeholder="Leave blank to keep current password">
                     </div>
 
-                    <button type="submit" [disabled]="profileLoading" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 shadow">
+                    <button type="submit" [disabled]="profileLoading" class="btn btn-swift-yellow px-4 py-2.5 fw-bold rounded-3 shadow">
                       @if (profileLoading) {
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...
                       } @else {
-                        <i class="bi bi-save me-1"></i> Save Changes
+                        <i class="bi bi-save-fill me-1"></i> Save Changes
                       }
                     </button>
                   </form>
@@ -554,12 +791,12 @@
               </div>
               
               <div class="col-md-5">
-                <div class="card shadow-sm border-0 bg-white rounded-3 p-4 text-center">
-                  <div class="avatar-lg bg-light text-primary fs-1 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                <div class="card swift-card p-4 text-center h-100 d-flex flex-column justify-content-center">
+                  <div class="kpi-icon-bubble bg-navy text-yellow mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
                     <i class="bi bi-shield-check"></i>
                   </div>
-                  <h6 class="fw-bold text-dark mb-2">Account Security</h6>
-                  <p class="text-muted small mb-0">Your profile details are stored securely. We never disclose passenger personal contact metadata to unauthorized third parties.</p>
+                  <h5 class="fw-bold text-navy mb-2">Account Security</h5>
+                  <p class="text-secondary small mb-0">Your profile details are stored securely. Passenger personal contact details are never disclosed to unauthorized third parties.</p>
                 </div>
               </div>
             </div>
@@ -568,77 +805,80 @@
 
         @if (selectedRide) {
           <div class="details-modal-overlay position-fixed top-0 start-0 end-0 bottom-0 d-flex align-items-center justify-content-center" 
-               style="background: rgba(0,0,0,0.5); z-index: 1050; padding: 20px;">
-            <div class="card border-0 shadow-lg rounded-3 bg-white w-100 overflow-hidden" style="max-width: 800px; max-height: 90vh;">
-              <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">Ride Detail Log #{{ selectedRide.id }}</h5>
+               style="background: rgba(15, 23, 42, 0.6); z-index: 1050; padding: 20px;">
+            <div class="card swift-card shadow-lg bg-white w-100 overflow-hidden" style="max-width: 800px; max-height: 90vh;">
+              <div class="card-header bg-navy text-white p-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-receipt text-yellow fs-5"></i>
+                  <h5 class="mb-0 fw-bold text-white">Ride Details #{{ selectedRide.id || selectedRide.Id }}</h5>
+                </div>
                 <button (click)="closeDetailsModal()" class="btn-close btn-close-white" aria-label="Close"></button>
               </div>
               <div class="card-body p-4 overflow-auto" style="max-height: calc(90vh - 120px);">
                 <div class="row g-4">
                   <div class="col-md-6">
-                    <div class="mb-3.5">
-                      <span class="text-muted small d-block">Requested Time</span>
-                      <strong class="text-dark">{{ selectedRide.requestedAt | date:'medium' }}</strong>
+                    <div class="mb-3">
+                      <span class="text-secondary small d-block">Requested Time</span>
+                      <strong class="text-navy">{{ selectedRide.requestedAt | date:'medium' }}</strong>
                     </div>
                     @if (selectedRide.completedAt) {
-                      <div class="mb-3.5">
-                        <span class="text-muted small d-block">Completed Time</span>
-                        <strong class="text-dark">{{ selectedRide.completedAt | date:'medium' }}</strong>
+                      <div class="mb-3">
+                        <span class="text-secondary small d-block">Completed Time</span>
+                        <strong class="text-navy">{{ selectedRide.completedAt | date:'medium' }}</strong>
                       </div>
                     }
-                    <div class="border-top pt-3 mb-3.5">
-                      <div class="d-flex align-items-start gap-2.5 mb-3">
+                    <div class="border-top pt-3 mb-3">
+                      <div class="d-flex align-items-start gap-2 mb-2">
                         <i class="bi bi-geo-alt-fill text-success fs-5"></i>
                         <div>
-                          <span class="text-muted small d-block">Pickup Address</span>
-                          <span class="text-dark fw-semibold">{{ getLandmarkName(selectedRide.pickupLat, selectedRide.pickupLng) }}</span>
+                          <span class="text-secondary small d-block">Pickup Address</span>
+                          <span class="text-navy fw-semibold">{{ getLandmarkName(selectedRide.pickupLat, selectedRide.pickupLng) }}</span>
                         </div>
                       </div>
-                      <div class="d-flex align-items-start gap-2.5">
+                      <div class="d-flex align-items-start gap-2">
                         <i class="bi bi-flag-fill text-danger fs-5"></i>
                         <div>
-                          <span class="text-muted small d-block">Drop-off Address</span>
-                          <span class="text-dark fw-semibold">{{ getLandmarkName(selectedRide.dropLat, selectedRide.dropLng) }}</span>
+                          <span class="text-secondary small d-block">Drop-off Address</span>
+                          <span class="text-navy fw-semibold">{{ getLandmarkName(selectedRide.dropLat, selectedRide.dropLng) }}</span>
                         </div>
                       </div>
                     </div>
 
                     @if (selectedRide.driver) {
-                      <div class="p-3 bg-light border rounded mb-3">
-                        <h6 class="fw-bold text-primary mb-2.5"><i class="bi bi-person-badge me-2"></i>Driver & Vehicle</h6>
-                        <div class="d-flex justify-content-between small mb-1.5">
-                          <span class="text-muted">Name</span>
-                          <strong class="text-dark">{{ selectedRide.driver.user.name }}</strong>
+                      <div class="p-3 bg-light border rounded-3 mb-3">
+                        <h6 class="fw-bold text-navy mb-2"><i class="bi bi-person-badge-fill text-yellow me-2"></i>Driver &amp; Vehicle</h6>
+                        <div class="d-flex justify-content-between small mb-1">
+                          <span class="text-secondary">Name</span>
+                          <strong class="text-navy">{{ selectedRide.driver.user.name }}</strong>
                         </div>
-                        <div class="d-flex justify-content-between small mb-1.5">
-                          <span class="text-muted">Vehicle</span>
-                          <strong class="text-dark">{{ selectedRide.driver.vehicle.type }}</strong>
+                        <div class="d-flex justify-content-between small mb-1">
+                          <span class="text-secondary">Vehicle</span>
+                          <strong class="text-navy">{{ selectedRide.driver.vehicle.type }}</strong>
                         </div>
                         <div class="d-flex justify-content-between small mb-0">
-                          <span class="text-muted">License plate</span>
-                          <span class="badge bg-secondary text-white">{{ selectedRide.driver.vehicle.numberplate }}</span>
+                          <span class="text-secondary">Plate</span>
+                          <span class="badge bg-navy text-yellow">{{ selectedRide.driver.vehicle.numberplate }}</span>
                         </div>
                       </div>
                     }
 
-                    <div class="p-3 bg-light border rounded d-flex justify-content-between align-items-center">
-                      <span class="fw-bold text-dark">Amount Charged</span>
-                      <strong class="text-primary fs-4">₹{{ selectedRide.fare | number:'1.2-2' }}</strong>
+                    <div class="p-3 bg-light border rounded-3 d-flex justify-content-between align-items-center">
+                      <span class="fw-bold text-navy">Amount Charged</span>
+                      <strong class="text-navy fs-4">₹{{ selectedRide.fare | number:'1.2-2' }}</strong>
                     </div>
                   </div>
 
                   <div class="col-md-6">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                      <span class="text-muted small fw-bold">Map Routing Path</span>
-                      <span class="badge bg-secondary">Status: {{ selectedRide.status }}</span>
+                      <span class="text-secondary small fw-bold">Map Route</span>
+                      <span class="badge bg-navy text-yellow">{{ selectedRide.status }}</span>
                     </div>
-                    <div id="detailsMap" class="rounded border" style="height: 280px; z-index: 1;"></div>
+                    <div id="detailsMap" class="rounded-3 border" style="height: 280px; z-index: 1;"></div>
                   </div>
                 </div>
               </div>
-              <div class="card-body bg-light border-0 p-3 text-end">
-                <button (click)="closeDetailsModal()" class="btn btn-secondary px-4">Close Details</button>
+              <div class="card-footer bg-light border-0 p-3 text-end">
+                <button (click)="closeDetailsModal()" class="btn btn-secondary px-4">Close</button>
               </div>
             </div>
           </div>

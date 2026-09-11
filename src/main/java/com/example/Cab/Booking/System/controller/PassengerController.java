@@ -49,7 +49,11 @@ public class PassengerController{
     
     @PostMapping("/ride/{rideId}/rate")
     public ResponseEntity<?> rideRate(@PathVariable long rideId, @RequestBody Ride ride){
-        return ResponseEntity.ok(passengerService.rideRate(rideId, ride));
+        try {
+            return ResponseEntity.ok(passengerService.rideRate(rideId, ride));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
     }
     @PostMapping("/ride/{rideId}/cancel")
     public ResponseEntity<?> cancelRide(@PathVariable long rideId){

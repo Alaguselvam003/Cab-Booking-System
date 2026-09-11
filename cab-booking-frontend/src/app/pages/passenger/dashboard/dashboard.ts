@@ -5,14 +5,11 @@ import { Router } from '@angular/router';
 import { PassengerService } from '../../../core/services/passenger.service';
 import { LocationService } from '../../../core/services/location.service';
 import { FareService } from '../../../core/services/fare.service';
-import { forkJoin, switchMap, map, finalize, of } from 'rxjs';
+import { forkJoin, switchMap, map, finalize } from 'rxjs';
 
 declare var L: any;
 
-interface GridCell {
-  row: number;
-  col: number;
-}
+
 
 @Component({
   selector: 'app-passenger-dashboard',
@@ -25,15 +22,12 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   rideHistory: any[] = [];
   
-
   activeTab = 'overview';
   
-
   totalRides = 0;
   completedRides = 0;
   cancelledRides = 0;
   totalSpent = 0;
-
 
   pickupAddress = '';
   dropAddress = '';
@@ -46,7 +40,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   private pickupCoords: { lat: number; lng: number } | null = null;
   private dropCoords: { lat: number; lng: number } | null = null;
 
-
   private bookingMap: any = null;
   private bookingPickupMarker: any = null;
   private bookingDropMarker: any = null;
@@ -56,7 +49,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   private activeRideMap: any = null;
   private activeRidePickupMarker: any = null;
   private activeRideDropMarker: any = null;
-  private activeRideDriverMarker: any = null;
   private activeRideRoutePolyline: any = null;
 
   selectedRide: any = null;
@@ -64,7 +56,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   private detailsPickupMarker: any = null;
   private detailsDropMarker: any = null;
   private detailsRoutePolyline: any = null;
-
 
   profileName = '';
   profileEmail = '';
@@ -74,19 +65,9 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   profileSuccess = '';
   profileError = '';
 
-
   notifications: string[] = [];
   private lastRideStatus: string | null = null;
 
-
-  pickup: GridCell | null = null;
-  drop: GridCell | null = null;
-  selectionMode: 'pickup' | 'drop' = 'pickup';
-  gridSize = 8;
-  gridRows = Array.from({ length: this.gridSize }, (_, i) => i + 1);
-  gridCols = Array.from({ length: this.gridSize }, (_, i) => i + 1);
-  driverLocation: { latitude: number; longitude: number } | null = null;
-  driverPath: any[] = [];
 
 
   ratingData = {
@@ -115,7 +96,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
       return;
     }
     this.currentUser = JSON.parse(userJson);
-    
 
     this.profileName = this.currentUser.name;
     this.profileEmail = this.currentUser.email;
@@ -124,13 +104,11 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     this.loadHistory();
     this.checkSavedActiveRide();
 
-
     const pendingJson = localStorage.getItem('pendingBooking');
     if (pendingJson) {
       try {
         const pending = JSON.parse(pendingJson);
         if (pending.pickupAddress) {
-
           this.pickupAddress = pending.pickupAddress;
           this.dropAddress = pending.dropAddress;
           this.travelDate = pending.date;
@@ -155,22 +133,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
               });
             }
           }, 300);
-        } else {
-
-          this.pickup = pending.pickup;
-          this.drop = pending.drop;
-          this.travelDate = pending.date;
-          localStorage.removeItem('pendingBooking');
-          
-          if (this.pickup && this.drop) {
-            this.pickupAddress = `Row ${this.pickup.row}, Col ${this.pickup.col}`;
-            this.dropAddress = `Row ${this.drop.row}, Col ${this.drop.col}`;
-            this.pickupCoords = { lat: this.pickup.row, lng: this.pickup.col };
-            this.dropCoords = { lat: this.drop.row, lng: this.drop.col };
-          }
-          
-          this.activeTab = 'book';
-          this.calculateFare();
         }
       } catch (e) {
         console.error('Error loading pending booking:', e);
@@ -197,7 +159,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     this.bookingSuccess = '';
     this.profileError = '';
     this.profileSuccess = '';
-    this.showRatingForm = false;
 
     if (tab === 'book') {
       setTimeout(() => {
@@ -227,10 +188,32 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     if (!this.currentUser) return;
     this.passengerService.getRideHistory(this.currentUser.userId).subscribe({
       next: (data) => {
-        this.rideHistory = data.sort((a: any, b: any) => {
+        this.rideHistory = (data || []).sort((a: any, b: any) => {
           return new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime();
         });
         this.calculateStats();
+        
+        const active = this.rideHistory.find((r: any) => 
+          r.status === 'REQUESTED' || r.status === 'ACCEPTED' || r.status === 'ONGOING' || r.status === 'IN_RIDE'
+        );
+        if (active) {
+          const activeId = active.id || active.Id;
+          this.activeRide = active;
+          this.pickupCoords = { lat: active.pickupLat, lng: active.pickupLng };
+          this.dropCoords = { lat: active.dropLat, lng: active.dropLng };
+          localStorage.setItem('activeRideId', activeId.toString());
+          if (!this.pollingInterval) {
+            this.startTrackingRide(activeId);
+          }
+        } else {
+          const unratedCompleted = this.rideHistory.find((r: any) => 
+            r.status === 'COMPLETED' && (r.rating === null || r.rating === undefined)
+          );
+          if (unratedCompleted && !this.ratedRideId) {
+            this.ratedRideId = unratedCompleted.id || unratedCompleted.Id;
+            this.showRatingForm = true;
+          }
+        }
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error fetching ride history:', err)
@@ -252,7 +235,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
       this.startTrackingRide(Number(activeRideId));
     }
   }
-
 
   onBookFormChange() {
     this.bookingError = '';
@@ -342,21 +324,22 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (response) => {
+        const rideId = response.id || response.Id;
         this.activeRide = response;
-        localStorage.setItem('activeRideId', response.Id.toString());
+        this.showRatingForm = false;
+        this.ratedRideId = null;
+        localStorage.setItem('activeRideId', rideId.toString());
         this.bookingSuccess = 'Ride requested successfully!';
         this.addNotification('Ride requested successfully! Waiting for driver acceptance...');
         
-
         this.pickupAddress = '';
         this.dropAddress = '';
         this.travelDate = '';
         this.distanceKm = null;
         this.calculatedFare = null;
         
-
         this.setActiveTab('active');
-        this.startTrackingRide(response.Id);
+        this.startTrackingRide(rideId);
       },
       error: (err) => {
         console.error('Error requesting ride:', err);
@@ -370,7 +353,7 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     this.pollRideStatus(rideId);
     this.pollingInterval = setInterval(() => {
       this.pollRideStatus(rideId);
-    }, 3000);
+    }, 1500);
   }
 
   stopPolling() {
@@ -381,46 +364,45 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   }
 
   pollRideStatus(rideId: number) {
-    this.passengerService.getDriverLocation(rideId).subscribe({
-      next: (data) => {
-        this.driverLocation = data.latitude ? { latitude: data.latitude, longitude: data.longitude } : null;
-        this.driverPath = data.path || [];
+    if (!this.currentUser) return;
+    this.passengerService.getRideHistory(this.currentUser.userId).subscribe({
+      next: (rides) => {
+        const current = (rides || []).find((r: any) => (r.id || r.Id) === rideId);
+        if (current) {
+          const previousStatus = this.activeRide ? this.activeRide.status : null;
+          this.activeRide = current;
+          this.pickupCoords = { lat: current.pickupLat, lng: current.pickupLng };
+          this.dropCoords = { lat: current.dropLat, lng: current.dropLng };
 
-        this.passengerService.getRideHistory(this.currentUser.userId).subscribe({
-          next: (rides) => {
-            const current = rides.find((r: any) => r.Id === rideId);
-            if (current) {
-              this.activeRide = current;
-              
-
-              this.pickupCoords = { lat: current.pickupLat, lng: current.pickupLng };
-              this.dropCoords = { lat: current.dropLat, lng: current.dropLng };
-
-              this.triggerActiveRideMapUpdate();
-              this.handleStatusNotifications(current);
-
-              if (current.status === 'COMPLETED') {
-                this.stopPolling();
-                this.message = 'Ride completed successfully!';
-                this.addNotification('Your ride has completed. Thank you for riding with us!');
-                this.ratedRideId = rideId;
-                this.showRatingForm = true;
-                localStorage.removeItem('activeRideId');
-                this.loadHistory();
-              } else if (current.status === 'CANCELLED') {
-                this.stopPolling();
-                this.message = 'Ride was cancelled.';
-                this.addNotification('Your ride was cancelled.');
-                this.activeRide = null;
-                localStorage.removeItem('activeRideId');
-                this.loadHistory();
-              }
-              this.cdr.detectChanges();
-            }
+          this.triggerActiveRideMapUpdate();
+          if (previousStatus !== current.status) {
+            this.handleStatusNotifications(current);
           }
-        });
+
+          if (current.status === 'COMPLETED') {
+            this.stopPolling();
+            this.message = 'Ride completed successfully! Please rate your trip.';
+            this.addNotification('Your ride has completed. Please rate your driver and trip experience!');
+            this.ratedRideId = rideId;
+            this.ratingData = { rating: 5, feedback: '' };
+            this.showRatingForm = true;
+            this.activeRide = null;
+            localStorage.removeItem('activeRideId');
+            this.setActiveTab('active');
+            this.loadHistory();
+          } else if (current.status === 'CANCELLED') {
+            this.stopPolling();
+            this.message = 'Ride was cancelled.';
+            this.addNotification('Your ride was cancelled.');
+            this.activeRide = null;
+            this.showRatingForm = false;
+            localStorage.removeItem('activeRideId');
+            this.loadHistory();
+          }
+          this.cdr.detectChanges();
+        }
       },
-      error: (err) => console.error('Error tracking driver:', err)
+      error: (err) => console.error('Error polling ride status:', err)
     });
   }
 
@@ -430,12 +412,14 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     const confirmCancel = confirm('Are you sure you want to cancel this ride?');
     if (!confirmCancel) return;
 
-    this.passengerService.cancelRide(this.activeRide.Id).subscribe({
+    const rideId = this.activeRide.id || this.activeRide.Id;
+    this.passengerService.cancelRide(rideId).subscribe({
       next: () => {
         this.message = 'Ride cancelled successfully.';
         this.addNotification('You cancelled your ride.');
         this.stopPolling();
         this.activeRide = null;
+        this.showRatingForm = false;
         localStorage.removeItem('activeRideId');
         this.loadHistory();
         this.setActiveTab('overview');
@@ -450,9 +434,12 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     if (ride.status === 'REQUESTED') {
       this.addNotification('Your request has been placed. Waiting for a driver.');
     } else if (ride.status === 'ACCEPTED') {
-      this.addNotification(`Driver ${ride.driver.user.name} accepted your ride!`);
-    } else if (ride.status === 'IN_RIDE') {
-      this.addNotification('Your ride has started. Have a safe journey!');
+      const driverName = ride.driver?.user?.name || 'Assigned Driver';
+      this.addNotification(`Driver ${driverName} accepted your ride! Driver is reaching pickup location.`);
+    } else if (ride.status === 'ONGOING' || ride.status === 'IN_RIDE') {
+      this.addNotification('Passenger picked up! Your ride is now ongoing to destination.');
+    } else if (ride.status === 'COMPLETED') {
+      this.addNotification('Trip completed! Please submit your rating and feedback.');
     }
     this.lastRideStatus = ride.status;
   }
@@ -468,26 +455,41 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     this.notifications = [];
   }
 
+  openRatingForRide(rideId: number) {
+    this.ratedRideId = rideId;
+    this.ratingData = { rating: 5, feedback: '' };
+    this.showRatingForm = true;
+    this.setActiveTab('active');
+  }
+
+  submittingRating = false;
 
   submitRating() {
-    if (!this.ratedRideId) return;
+    if (!this.ratedRideId || this.submittingRating) return;
+    this.submittingRating = true;
     const ratingPayload = {
       rating: this.ratingData.rating,
       feedback: this.ratingData.feedback
     };
     this.passengerService.rateRide(this.ratedRideId, ratingPayload).subscribe({
       next: () => {
-        this.message = 'Thank you for your feedback!';
+        this.submittingRating = false;
+        this.message = 'Thank you for your rating & feedback!';
         this.showRatingForm = false;
         this.ratedRideId = null;
         this.ratingData = { rating: 5, feedback: '' };
         this.loadHistory();
         this.setActiveTab('history');
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error rating ride:', err)
+      error: (err) => {
+        this.submittingRating = false;
+        console.error('Error rating ride:', err);
+        this.message = 'Failed to submit rating. Please try again.';
+        this.cdr.detectChanges();
+      }
     });
   }
-
 
   viewRideDetails(ride: any) {
     this.selectedRide = ride;
@@ -516,7 +518,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     }
     this.cdr.detectChanges();
   }
-
 
   saveProfile() {
     if (!this.currentUser) return;
@@ -556,7 +557,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
       }
     });
   }
-
 
   private initBookingMap() {
     if (this.bookingMap) return;
@@ -599,9 +599,9 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     }).addTo(this.bookingMap).bindPopup('Drop Location');
 
     this.bookingRoutePolyline = L.polyline(coordinates, {
-      color: '#0d6efd',
+      color: '#2563EB',
       weight: 5,
-      opacity: 0.8,
+      opacity: 0.85,
       lineJoin: 'round'
     }).addTo(this.bookingMap);
 
@@ -628,7 +628,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
   private triggerActiveRideMapUpdate() {
     if (!this.activeRideMap || !this.pickupCoords || !this.dropCoords) return;
 
-
     if (!this.activeRideRoutePolyline) {
       this.locationService.getRoute(
         this.pickupCoords.lat, this.pickupCoords.lng,
@@ -637,9 +636,9 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
         next: (route) => {
           if (this.activeRideMap) {
             this.activeRideRoutePolyline = L.polyline(route.coordinates, {
-              color: '#0d6efd',
+              color: '#2563EB',
               weight: 5,
-              opacity: 0.8,
+              opacity: 0.85,
               lineJoin: 'round'
             }).addTo(this.activeRideMap);
             
@@ -650,7 +649,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
         }
       });
     }
-
 
     if (!this.activeRidePickupMarker) {
       this.activeRidePickupMarker = L.marker([this.pickupCoords.lat, this.pickupCoords.lng], {
@@ -672,27 +670,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
           iconAnchor: [15, 30]
         })
       }).addTo(this.activeRideMap).bindPopup('Drop Location');
-    }
-
-
-    if (this.driverLocation && this.driverLocation.latitude && this.driverLocation.longitude) {
-      if (this.activeRideDriverMarker) {
-        this.activeRideDriverMarker.setLatLng([this.driverLocation.latitude, this.driverLocation.longitude]);
-      } else {
-        this.activeRideDriverMarker = L.marker([this.driverLocation.latitude, this.driverLocation.longitude], {
-          icon: L.divIcon({
-            className: 'custom-driver-marker',
-            html: '<i class="bi bi-car-front-fill text-warning fs-3 shadow"></i>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-          })
-        }).addTo(this.activeRideMap).bindPopup('Driver Location').openPopup();
-      }
-    } else {
-      if (this.activeRideDriverMarker) {
-        this.activeRideMap.removeLayer(this.activeRideDriverMarker);
-        this.activeRideDriverMarker = null;
-      }
     }
   }
 
@@ -736,9 +713,9 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
     }).addTo(this.detailsMap);
 
     this.detailsRoutePolyline = L.polyline(coordinates, {
-      color: '#6c757d',
+      color: '#2563EB',
       weight: 5,
-      opacity: 0.8,
+      opacity: 0.85,
       lineJoin: 'round'
     }).addTo(this.detailsMap);
 
@@ -761,7 +738,6 @@ export class PassengerDashboardComponent implements OnInit, OnDestroy {
       this.detailsMap = null;
     }
   }
-
 
   getLandmarkName(lat: number, lng: number): string {
     return this.locationService.getLandmarkName(lat, lng);

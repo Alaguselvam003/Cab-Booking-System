@@ -88,12 +88,20 @@ public class PassengerService{
         rideRepository.save(ride);
     }
 
-    public String rideRate(Long rideId, Ride ride){
+    public Map<String, Object> rideRate(Long rideId, Ride ride){
         Ride existingRide = rideRepository.findById(rideId).orElseThrow(() -> new RuntimeException("Ride not found"));
+        if (existingRide.getStatus() != RideStatus.COMPLETED) {
+            throw new RuntimeException("Rating is only allowed after ride completion. Current status: " + existingRide.getStatus());
+        }
         existingRide.setRating(ride.getRating());
         existingRide.setFeedback(ride.getFeedback());
-        rideRepository.save(existingRide);
-        return "Ride rated successfully";
+        Ride saved = rideRepository.save(existingRide);
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "Ride rated successfully");
+        result.put("rideId", saved.getId());
+        result.put("rating", saved.getRating());
+        result.put("feedback", saved.getFeedback());
+        return result;
     }
 
     public User updateProfile(Long userId, User updatedUser) {

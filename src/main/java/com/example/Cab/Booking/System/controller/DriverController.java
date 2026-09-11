@@ -70,10 +70,28 @@ public class DriverController {
         }
     }
 
+    @PostMapping("/ride/{rideId}/pickup")
+    public ResponseEntity<Ride> pickupRide(@PathVariable Long rideId) {
+        try {
+            return ResponseEntity.ok(driverService.pickupRide(rideId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
     @PostMapping("/ride/{rideId}/start")
     public ResponseEntity<Ride> startRide(@PathVariable Long rideId) {
         try {
             return ResponseEntity.ok(driverService.startRide(rideId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PostMapping("/ride/{rideId}/drop")
+    public ResponseEntity<Ride> dropRide(@PathVariable Long rideId) {
+        try {
+            return ResponseEntity.ok(driverService.dropRide(rideId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
         }

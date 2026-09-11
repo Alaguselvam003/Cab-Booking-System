@@ -19,11 +19,16 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   rideHistory: any[] = [];
   message = '';
 
-  requestsTimer: any = null;
-  activeRideTimer: any = null;
-  simTimer: any = null;
+  countdownSeconds = 0;
+  isCountingDown = false;
+  countdownMessage = '';
+  canPickup = false;
+  canDrop = false;
 
-  isSimulating = false;
+  private countdownTimer: any = null;
+  private requestsTimer: any = null;
+  private activeRideTimer: any = null;
+  private historyTimer: any = null;
 
   constructor(
     private driverService: DriverService, 
@@ -61,6 +66,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
         
         this.startRequestsPolling();
         this.startActiveRidePolling();
+        this.startHistoryPolling();
       },
       error: (err) => {
         console.error('Error loading driver profile:', err);
@@ -73,12 +79,26 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     if (!this.driverProfile) return;
     this.driverService.getRideHistory(this.driverProfile.driverId).subscribe({
       next: (history) => {
-        this.rideHistory = history.sort((a: any, b: any) => {
+        this.rideHistory = (history || []).sort((a: any, b: any) => {
           return new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime();
         });
       },
       error: (err) => console.error('Error fetching driver history:', err)
     });
+  }
+
+  startHistoryPolling() {
+    this.stopHistoryPolling();
+    this.historyTimer = setInterval(() => {
+      this.loadHistory();
+    }, 4000);
+  }
+
+  stopHistoryPolling() {
+    if (this.historyTimer) {
+      clearInterval(this.historyTimer);
+      this.historyTimer = null;
+    }
   }
 
   toggleAvailability() {
@@ -87,6 +107,9 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       next: (updated) => {
         this.driverProfile.isAvailable = updated.isAvailable;
         this.message = `Availability toggled to: ${updated.isAvailable ? 'AVAILABLE' : 'OFFLINE'}`;
+        if (updated.isAvailable) {
+          this.pollRequests();
+        }
       },
       error: (err) => console.error('Error toggling availability:', err)
     });
@@ -103,7 +126,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.pollRequests();
     this.requestsTimer = setInterval(() => {
       this.pollRequests();
-    }, 4000);
+    }, 2000);
   }
 
   stopRequestsPolling() {
@@ -120,7 +143,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     }
     this.driverService.getIncomingRides().subscribe({
       next: (data) => {
-        this.incomingRequests = data;
+        this.incomingRequests = (data || []).filter((r: any) => r.status === 'REQUESTED' && !r.driver);
       },
       error: (err) => console.error('Error fetching requests:', err)
     });
@@ -131,7 +154,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.pollActiveRide();
     this.activeRideTimer = setInterval(() => {
       this.pollActiveRide();
-    }, 4000);
+    }, 2000);
   }
 
   stopActiveRidePolling() {
@@ -148,8 +171,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
         if (ride) {
           this.activeRide = ride;
           this.incomingRequests = [];
+          this.updateRideState(ride);
         } else {
           this.activeRide = null;
+          this.canPickup = false;
+          this.canDrop = false;
         }
       },
       error: (err) => console.error('Error checking active ride:', err)
@@ -160,131 +186,105 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.pollActiveRide();
   }
 
+  updateRideState(ride: any) {
+    if (ride.status === 'ACCEPTED') {
+      if (!this.isCountingDown) {
+        this.canPickup = true;
+        this.canDrop = false;
+        if (!this.countdownMessage) {
+          this.countdownMessage = 'Driver has reached the passenger location.';
+        }
+      }
+    } else if (ride.status === 'ONGOING' || ride.status === 'IN_RIDE') {
+      this.canPickup = false;
+      this.canDrop = true;
+      this.countdownMessage = 'Passenger Picked Up. In transit to drop location.';
+    } else {
+      this.canPickup = false;
+      this.canDrop = false;
+    }
+  }
+
   acceptRequest(rideId: number) {
     if (!this.driverProfile) return;
     this.driverService.acceptRide(this.driverProfile.driverId, rideId).subscribe({
       next: (acceptedRide) => {
         this.activeRide = acceptedRide;
         this.driverProfile.isAvailable = false;
-        this.message = 'Ride request accepted! Prepare to pickup the passenger.';
         this.incomingRequests = [];
-        
-        this.driverService.updateLocation(this.driverProfile.driverId, 1.0, 1.0).subscribe({
-          next: (profile) => { this.driverProfile = profile; }
-        });
+        this.startPickupCountdown();
       },
       error: (err) => {
         console.error('Error accepting ride:', err);
         this.message = 'Failed to accept ride. It may have been accepted by another driver or cancelled.';
+        this.pollRequests();
       }
     });
   }
 
-  startRide() {
-    if (!this.activeRide) return;
-    this.driverService.startRide(this.activeRide.Id).subscribe({
-      next: (startedRide) => {
-        this.activeRide = startedRide;
-        this.message = 'Ride started! Head to the drop-off location.';
+  startPickupCountdown() {
+    this.stopCountdownTimer();
+    this.isCountingDown = true;
+    this.canPickup = false;
+    this.canDrop = false;
+    this.countdownSeconds = 2;
+    this.countdownMessage = `Driver is reaching the passenger location... (${this.countdownSeconds}s remaining)`;
+
+    this.countdownTimer = setInterval(() => {
+      this.countdownSeconds--;
+      if (this.countdownSeconds > 0) {
+        this.countdownMessage = `Driver is reaching the passenger location... (${this.countdownSeconds}s remaining)`;
+      } else {
+        this.stopCountdownTimer();
+        this.isCountingDown = false;
+        this.canPickup = true;
+        this.countdownMessage = 'Driver has reached the passenger location.';
+      }
+    }, 1000);
+  }
+
+  stopCountdownTimer() {
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
+  }
+
+  pickupPassenger() {
+    if (!this.activeRide || !this.canPickup) return;
+    const rideId = this.activeRide.id || this.activeRide.Id;
+    this.driverService.pickupRide(rideId).subscribe({
+      next: (ongoingRide) => {
+        this.activeRide = ongoingRide;
+        this.canPickup = false;
+        this.canDrop = true;
+        this.countdownMessage = 'Passenger Picked Up. In transit to destination.';
+        this.message = 'Passenger Picked Up! Head safely to the drop location.';
       },
-      error: (err) => console.error('Error starting ride:', err)
+      error: (err) => {
+        console.error('Error picking up passenger:', err);
+        this.message = 'Failed to update pickup status. Please try again.';
+      }
     });
   }
 
-  completeRide() {
-    if (!this.activeRide) return;
-    this.stopSimulation();
-    this.driverService.completeRide(this.activeRide.Id).subscribe({
+  dropPassenger() {
+    if (!this.activeRide || !this.canDrop) return;
+    const rideId = this.activeRide.id || this.activeRide.Id;
+    this.driverService.dropRide(rideId).subscribe({
       next: () => {
-        this.message = 'Ride completed successfully!';
+        this.message = 'Ride Completed Successfully! Driver is now available for new bookings.';
         this.activeRide = null;
+        this.canPickup = false;
+        this.canDrop = false;
+        this.countdownMessage = '';
         this.driverProfile.isAvailable = true;
         this.loadHistory();
         this.loadDriverProfile();
       },
-      error: (err) => console.error('Error completing ride:', err)
-    });
-  }
-
-  startLocationSimulation() {
-    if (!this.activeRide || !this.driverProfile) return;
-    this.isSimulating = true;
-    this.stopSimulationTimer();
-
-    this.simTimer = setInterval(() => {
-      this.simulationStep();
-    }, 1500);
-  }
-
-  stopSimulation() {
-    this.isSimulating = false;
-    this.stopSimulationTimer();
-  }
-
-  stopSimulationTimer() {
-    if (this.simTimer) {
-      clearInterval(this.simTimer);
-      this.simTimer = null;
-    }
-  }
-
-  simulationStep() {
-    if (!this.activeRide || !this.driverProfile) {
-      this.stopSimulation();
-      return;
-    }
-
-    let targetLat = 0;
-    let targetLng = 0;
-
-    if (this.activeRide.status === 'ACCEPTED') {
-      targetLat = this.activeRide.pickupLat;
-      targetLng = this.activeRide.pickupLng;
-    } else if (this.activeRide.status === 'IN_RIDE') {
-      targetLat = this.activeRide.dropLat;
-      targetLng = this.activeRide.dropLng;
-    } else {
-      this.stopSimulation();
-      return;
-    }
-
-    let currentLat = this.driverProfile.currentLatitude || 1.0;
-    let currentLng = this.driverProfile.currentLongitude || 1.0;
-
-    const latDiff = targetLat - currentLat;
-    const lngDiff = targetLng - currentLng;
-    
-
-    const step = (Math.abs(latDiff) > 1.5 || Math.abs(lngDiff) > 1.5) ? 1.0 : 0.005;
-
-    if (Math.abs(latDiff) <= step) {
-      currentLat = targetLat;
-    } else {
-      currentLat += latDiff > 0 ? step : -step;
-    }
-
-    if (Math.abs(lngDiff) <= step) {
-      currentLng = targetLng;
-    } else {
-      currentLng += lngDiff > 0 ? step : -step;
-    }
-
-    this.driverService.updateLocation(this.driverProfile.driverId, currentLat, currentLng).subscribe({
-      next: (profile) => {
-        this.driverProfile = profile;
-        
-        if (currentLat === targetLat && currentLng === targetLng) {
-          this.stopSimulation();
-          if (this.activeRide.status === 'ACCEPTED') {
-            this.message = 'Arrived at pickup location! You can now start the ride.';
-          } else {
-            this.message = 'Arrived at drop-off location! You can now complete the ride.';
-          }
-        }
-      },
       error: (err) => {
-        console.error('Error simulating step:', err);
-        this.stopSimulation();
+        console.error('Error completing drop:', err);
+        this.message = 'Failed to complete ride. Please try again.';
       }
     });
   }
@@ -292,7 +292,8 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   stopAllTimers() {
     this.stopRequestsPolling();
     this.stopActiveRidePolling();
-    this.stopSimulationTimer();
+    this.stopHistoryPolling();
+    this.stopCountdownTimer();
   }
 
   getLandmarkName(lat: number, lng: number): string {
